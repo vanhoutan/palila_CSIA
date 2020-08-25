@@ -1,5 +1,7 @@
-This is a repository for a long-term analysis of trophic position in palila (Loxioides bailleui). 
+# This is a repository for a long-term analysis of trophic position in palila (Loxioides bailleui). 
+
+The aim is to document any changes in trophic level (TL) in palila from 1880-present, establish the TL of the commonest palila forage items, and to infer from the two any dietary shifts over time. In addition, we've examined environmental factors which might explain the TP changes. 
 
 The project was initiated in 2018 and is a collaboration between the Monterey Bay Aquarium (Van Houtan, Gagne), the Bishop Museum (Haggeman), and the US Geological Survey (Banko). It is based off of the Ocean Memory Lab model developed at the Monterey Bay Aquarium, and the bulk of the specimen preparation and analysis was done at the Monterey Bay Aquarium. 
 
-Much of the code in this repo was done by Tyler Gagne, when he was at the Monterey Bay Aquarium.  
+Much of the code and repo was put together by Tyler Gagne, when he was at the Monterey Bay Aquarium.  
