@@ -26,11 +26,11 @@ themeo <- ggplot2::theme_classic()+
 
 #read in an merge palila data
 # palila UC_davis and kyle ID cross reference table
-Palila_meta <- read.delim('/data/palila_samples/palila_sample_metadata_MBA_UCDavis_IDs.txt')
+Palila_meta <- read.delim('data/palila_samples/palila_sample_metadata_MBA_UCDavis_IDs.txt')
 # UC davis stable isotope data
-CSSIAPalila <- read.csv('/data/palila_samples/Palila_CSSIA_Aug20.csv')
+CSSIAPalila <- read.csv('data/palila_samples/Palila_CSSIA_Aug20.csv')
 # location, individual, date, metadata
-addt_meta <- read.csv('/data/palila_samples/Palila_specimens_feather_database.csv')
+addt_meta <- read.csv('data/palila_samples/Palila_specimens_feather_database.csv')
 
 # turn the palila ID sheet in to a mergeable file
 Palila_meta <- Palila_meta %>% 
@@ -118,7 +118,6 @@ total %>%
       themeo
 
 
-
 # correct TP based on interannual phenology
 mod91 <- lm(tp~MONTH, filter(total, year == 1991) ) # we have full coverage accross the year for a single year in 1991
 beta <- mod91$coefficients[2] %>% as.numeric()      # extract beta coeficient from the model fit to 1991 data
@@ -196,11 +195,11 @@ null_df_quant <- null_df %>%
 null_df_quant$year <- paste0("1","/","1","/",as.character(null_df_quant$year)) %>% mdy()
 total$year <- paste0("1","/","1","/",as.character(total$year)) %>% mdy()
 
-
 ggplot()+
   geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1)+
   #geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
   themeo
+
 
 tp <- ggplot(null_df_quant)+
   geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
@@ -214,6 +213,7 @@ tp <- ggplot(null_df_quant)+
   themeo
 tp
 
+# what ends up becoming Figure 1 time series of palila TP
 ggplot(null_df_quant)+
   geom_ribbon( aes(x=year,ymin=lower,ymax=upper), size = .1, alpha = .5)+
   geom_line( aes(x=year,y = median), color = "#ffde17", size = 1.5)+
@@ -224,6 +224,8 @@ ggplot(null_df_quant)+
   themeo
 
 # plotting the traverse that Palila takes accross constant TL of prey items
+# could be interesting supplemental figure that shows 3 major forage item groups
+
 source_csv <- read.csv("./data/mixing model/source_data.csv") # estimated prey item TL, dev in prey_TL.R saved for mixing model as .csv
 source_csv_plot <- rbind(source_csv,source_csv)  
 source_csv_plot$year <- NULL
@@ -243,7 +245,6 @@ tp+
   geom_line( aes(x=year,y = median), size = .1)
   
 
-
 # Create time series of TP in all Palila through time for mixing model
 # Consider breaking up by sex later
  mix_csv <- null_df %>% 
@@ -252,7 +253,7 @@ tp+
     TL = mean(prediction),
     sd = sd(prediction),
     spp = "PALI")
-# write.csv(mix_csv,"./data/mixing model/mixture_data.csv")
+# write.csv(mix_csv,"data/mixing model/mixture_data.csv")
 
 #cleanup
 rm(new_df,null_df,i,tp_est, tp_predict,round,mix_csv, mod91, new_month,prediction, GetTP, source_csv_plot,source_csv)
@@ -320,7 +321,12 @@ drought
 # two cells over relavant areas
 # temp <- read.table('https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.01/ge/grid05/cells/N17.5W157.5/tmp/N19.75W155.75.tmp.txt', header = T, skip = 4)
 # closer to mauna kea/loa
-temp2 <- read.table('https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.01/ge/grid05/cells/N17.5W157.5/tmp/N19.75W155.25.tmp.txt', header = T, skip = 4)
+
+
+## Modified to reflect new data URL link through Google Earth kml 5degree grid
+
+temp2 <- read.table('https://crudata.uea.ac.uk/cru/data/crutem/ge/crutem4-2019-12/N17.5W157.5_data.txt', header = T, skip = 8)
+#print(temp2)
 
 # modify temp df
 colnames(temp2) <- c("year","month","degC")
