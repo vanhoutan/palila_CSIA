@@ -26,11 +26,11 @@ themeo <- ggplot2::theme_classic()+
 
 #read in an merge palila data
 # palila UC_davis and kyle ID cross reference table
-Palila_meta <- read.delim('/Users/tgagne/Palila_2018/data/palila_samples/palila_sample_metadata_MBA_UCDavis_IDs.txt')
+Palila_meta <- read.delim('/data/palila_samples/palila_sample_metadata_MBA_UCDavis_IDs.txt')
 # UC davis stable isotope data
-CSSIAPalila <- read.csv('/Users/tgagne/Palila_2018/data/palila_samples/Palila_CSSIA_Aug20.csv')
+CSSIAPalila <- read.csv('/data/palila_samples/Palila_CSSIA_Aug20.csv')
 # location, individual, date, metadata
-addt_meta <- read.csv('/Users/tgagne/Palila_2018/data/palila_samples/Palila_specimens_feather_database.csv')
+addt_meta <- read.csv('/data/palila_samples/Palila_specimens_feather_database.csv')
 
 # turn the palila ID sheet in to a mergeable file
 Palila_meta <- Palila_meta %>% 
@@ -44,7 +44,7 @@ CSSIAPalila <- CSSIAPalila %>%
   mutate(accession_id = acession_id.y, year = year.y) %>% 
   dplyr::select(-acession_id.x,-acession_id.y,- year.y,-year.x)
 
-# bring additional metadate from other sheet... and join again below
+# bring additional metadata from other sheet... and join again below
 addt_meta <- addt_meta %>% 
   dplyr::select(ID_NO, SEX, AGE, SPEC_NOTES,SPEC_PREP, LOCATION,REGION) %>% 
   mutate(accession_id = ID_NO) %>% dplyr::select(-ID_NO)
