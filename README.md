@@ -1,6 +1,6 @@
 # This is a repository for a long-term analysis of trophic position in palila (Loxioides bailleui). 
 
-The palila is an endemic Hawaiian landbird that only resides on the upper slopes of one volcano on the island of Hawaii. It is critically endangered and is actively declining in both its abundance and erange. 
+The palila is an endemic Hawaiian landbird that only resides on the upper slopes of one volcano on the island of Hawaii. It is critically endangered and is actively declining in both its abundance and geographic range. 
 
 The aim of this project is to examine how dietary and environmental factors are contributing to this problem, and if there is any practical management advice that may result. Specifically, the analysis will document any changes in trophic level (TL) in palila from 1880-present, establish the TL of the commonest palila forage items, and to infer from the two any dietary shifts over time. In addition, we've examined environmental factors which might explain the TP changes. 
 
