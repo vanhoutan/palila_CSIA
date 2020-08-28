@@ -3,6 +3,7 @@ library(MixSIAR)
 library(dplyr)
 library(plyr)
 library(ggplot2)
+library(Rjags)
 library(R2jags)
 
 ##############################
@@ -22,23 +23,24 @@ sppx<- "PALI"
 x = 1
 
 #for(x in 1:length(sppx)){
-  mix<-read.csv('./data/mixing model/mixture_data.csv')
+  mix<-read.csv('data/mixing model/mixture_data.csv')
   str(mix)
   mix<-subset(mix, spp == sppx[x])
-  write.csv(mix,file = "./data/mixing model/mixture_data_spp.csv")
+  write.csv(mix,file = "data/mixing model/mixture_data_spp.csv")
   
   #mix data = i.e. consumer
-  mix<- load_mix_data(filename = "./data/mixing model/mixture_data_spp.csv",iso_names = "TL",factors = "spp",
+  mix<- load_mix_data(filename = "data/mixing model/mixture_data_spp.csv",iso_names = "TL",factors = "spp",
                       fac_random = TRUE,fac_nested = NULL,cont_effects = "year")
+  
   #source data #new omma and caran TL
-  source <- load_source_data( filename = "./data/mixing model/source_data.csv",
+  source <- load_source_data( filename = "data/mixing model/source_data.csv",
                               source_factors = NULL,conc_dep = FALSE,data_type = "means", mix)
+  
   #widen priors of source distributions
   source$S_SIG[,1] <- source$S_SIG[,1]
   
-
   #discrimination data
-  discr <- load_discr_data(filename = "./data/mixing model/discrimination_data.csv",mix)
+  discr <- load_discr_data(filename = "data/mixing model/discrimination_data.csv",mix)
   #discr$mu[,1] <- rep( .9,  6)
   #discr$sig2[,1] <- rep(0.5,6)
  
