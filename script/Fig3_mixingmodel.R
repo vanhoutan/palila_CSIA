@@ -1,9 +1,9 @@
 library(data.table)
 library(MixSIAR)
-library(dplyr)
 library(plyr)
+library(dplyr)
 library(ggplot2)
-library(Rjags)
+library(rjags)
 library(R2jags)
 
 ##############################

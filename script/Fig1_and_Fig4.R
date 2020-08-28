@@ -333,7 +333,7 @@ drought
 ## lines 339-352 curently not working
 
 temp2 <- read.table('https://crudata.uea.ac.uk/cru/data/crutem/ge/crutem4-2019-12/N17.5W157.5_data.txt', header = T, skip = 8)
-## print(temp2)
+print(temp2)
 
 # modify temp df
 colnames(temp2) <- c("year","month","degC")
@@ -487,7 +487,7 @@ formula4 <- raw_tp ~ rollmean + SPEI36
 # concatenate in to a list for the loop build
 formula_list <- list(formula1,formula2,formula3,formula4)
 
-# single model selection
+# single model selection, use to select which model you want to try
 each_formula <- 2
 
 # for(each_formula in 1:length(formula_list)){
@@ -529,7 +529,8 @@ print(data.brms$waic)
 # launch_shinystan(data.brms)
 
 # according to a "small effect" Cohen 1988
-#We might want to say that a regression coecient x on predictor x is practically equivalent to zero if a
+## significance test in the Bayesian framework, accept or reject a factor/model
+#We might want to say that a regression coeffcient x on predictor x is practically equivalent to zero if a
 #change across the \main range of x" produces only a negligible change in the predicted value ^y.
 equi_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+theme_bw()+coord_flip()
 
