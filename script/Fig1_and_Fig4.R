@@ -20,7 +20,8 @@ themeo <- ggplot2::theme_classic()+
         axis.text.x = element_text(margin = margin( 0.2, unit = "cm")),
         axis.text.y = element_text(margin = margin(c(1, 0.2), unit = "cm")),
         axis.ticks.length=unit(-0.1, "cm"),
-        panel.border = element_rect(colour = "black", fill=NA, size=.5),
+        panel.border = element_rect(colour = "black", fill=NA, size=.5), #element_rect is deprecated
+        # panel.border = linewidth(colour = "black", fill=NA, size=.5),
         legend.title=element_blank(),
         strip.text=element_text(hjust=0) )
 
@@ -74,8 +75,8 @@ GetTP <- function(anID){
    b =   2.1
    TEF = 5.9
   
-   ## num_of_draws = 1000
-   num_of_draws = 100
+   num_of_draws = 1000
+   ## num_of_draws = 100
   
   ala.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ala")) , sd = as.numeric(subset(anID, value == "sd", select = "ala"))) # alanine
   glu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamic acid
@@ -176,8 +177,8 @@ rm(mod91,beta,new_month,prediction, GetTP)
 null_df <- NULL                                                                      # empty object to chuck results in to:  
 
 
-  for( i in 1:100){
-  ## for( i in 1:1000){
+  ## for( i in 1:100){
+  for( i in 1:1000){
   new_df <- ddply(total,.(year),function(x) x[sample(nrow(x),1),])                   # sample value from each available year
   tp_est <- loess(tp ~ year , new_df,span = 1, surface = "direct")                   # fit loess model through the series
   tp_predict <- as.data.frame(predict(tp_est,data.frame(year = seq(1890, 2015,1))))  # predict for all years
@@ -191,7 +192,7 @@ colnames(null_df)[1] <- "prediction"
 # get quantiles from the resampled models
 null_df_quant <- null_df %>% 
   dplyr::group_by(year) %>% 
-  dplyr::summarise(upper = quantile(prediction,.025,na.rm = T),   # get 2.5%, 50%, 95% quantile
+  dplyr::summarise(upper = quantile(prediction,.025,na.rm = T),   # get 2.5%, 50%, 97.5% quantile
             median = quantile(prediction,.5,na.rm = T) ,
             lower =  quantile(prediction,.975,na.rm = T))
 
