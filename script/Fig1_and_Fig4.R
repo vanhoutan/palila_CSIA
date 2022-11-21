@@ -202,7 +202,9 @@ total$year <- paste0("1","/","1","/",as.character(total$year)) %>% mdy()
 
 ## RF/ICE looking plot with multiple runs, no mean
 ggplot()+
-  geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1)+
+  # geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1)+
+  # add transparency to lines of model runs
+  geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1, alpha = 0.4)+
   #geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
   themeo
 
@@ -552,7 +554,7 @@ plot(hypothesis(data.brms, "rollmean:SPEI36 > 0"))
 
 library(RColorBrewer)
 
-# margional effects plots with prediction intervals
+# margianal effects plots with prediction intervals
 
 SPEI36_bayes <- mod_df %>%
   data_grid(SPEI36 = seq_range(SPEI36, n = 10), rollmean = seq_range(rollmean, n = 10), parasitism = seq_range(parasitism, n = 10)) %>%
