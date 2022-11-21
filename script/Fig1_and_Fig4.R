@@ -27,11 +27,11 @@ themeo <- ggplot2::theme_classic()+
 
 #read in an merge palila data
 # palila UC_davis and kyle ID cross reference table
-Palila_meta <- read.delim('data/palila_samples/palila_sample_metadata_MBA_UCDavis_IDs.txt')
+Palila_meta <- read.delim('data/palila_samples/palila_sample_metadata_MBA_UCDavis_IDs2.txt')
 # UC davis stable isotope data
 CSSIAPalila <- read.csv('data/palila_samples/Palila_CSSIA_Aug20.csv')
 # location, individual, date, metadata
-addt_meta <- read.csv('data/palila_samples/Palila_specimens_feather_database.csv')
+addt_meta <- read.csv('data/palila_samples/Palila_specimens_feather_database2.csv')
 
 # turn the palila ID sheet in to a mergeable file
 Palila_meta <- Palila_meta %>% 
@@ -122,8 +122,8 @@ total %>%
 
 
 # correct TP based on interannual phenology
-mod91 <- lm(tp~MONTH, filter(total, year == 1991) ) # we have full coverage accross the year for a single year in 1991
-beta <- mod91$coefficients[2] %>% as.numeric()      # extract beta coeficient from the model fit to 1991 data
+mod91 <- lm(tp~MONTH, filter(total, year == 1991) ) # we have full coverage across the year for a single year in 1991
+beta <- mod91$coefficients[2] %>% as.numeric()      # extract beta coefficient from the model fit to 1991 data
 
 # month that we wish to adjust all TP values to
 new_month <- 6
@@ -131,7 +131,7 @@ new_month <- 6
 # adjust all TPs to June (6 mnth) value using the beta estimated from the 1991 linear model 
 total$adj_tp <- beta * (new_month) + (total$tp - beta * total$MONTH)  
 
-# predict accross the entire year to visualize it below
+# predict across the entire year to visualize it below
 prediction <- predict(mod91,interval = "confidence") %>% as.data.frame() 
 
 # plot 1991 TP phenology with fitted model
@@ -168,7 +168,7 @@ ggplot(total)+
 # assign TP to be the adjusted TP
 total$tp <- total$adj_tp; total$adj_tp <- NULL
 
-# cleanup uneeded objects
+# cleanup unneeded objects
 rm(mod91,beta,new_month,prediction, GetTP)
 
 #########################################################################################################
@@ -327,26 +327,55 @@ drought <- ggplot(SPEI)+
 drought
 
 # temp
-# two cells over relavant areas
+# two cells over relevant areas
 # temp <- read.table('https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.01/ge/grid05/cells/N17.5W157.5/tmp/N19.75W155.75.tmp.txt', header = T, skip = 4)
 # closer to mauna kea/loa
 
 
 ## Modified script to reflect new data URL link through Google Earth kml 5degree grid
-## lines 339-352 curently not working
+
+## lines 341-344 not working as CRU changed date formatting
+# temp2 <- read.table('https://crudata.uea.ac.uk/cru/data/crutem/ge/crutem4-2019-12/N17.5W157.5_data.txt', header = T, skip = 8)
+# print(temp2)
+
+# modify temp df
+# colnames(temp2) <- c("year","month","degC")
+# temp2$date <- paste0(as.character(temp2$month),"/","1","/",as.character(temp2$year)) %>% mdy()
+# temp2$rollmean<- rollmean(temp2$degC,k = 12, na.pad = T, align = "right")
 
 temp2 <- read.table('https://crudata.uea.ac.uk/cru/data/crutem/ge/crutem4-2019-12/N17.5W157.5_data.txt', header = T, skip = 8)
+colnames(temp2)
+temp2 <- temp2 %>%
+  # Drop the three month means in the new dataset
+  select(-`DJF.`,-`MAM.`,-`JJA.`,-`SON.`,-Annual) %>%
+  # Cast the wide DF tall
+  pivot_longer(`Jan.`:`Dec.`) %>%
+  # rename appropriately
+  dplyr::rename(
+    degC = value,
+    year = `Year.`,
+    month = name
+  )
 print(temp2)
 
 # modify temp df
-colnames(temp2) <- c("year","month","degC")
+# Create a date formatted column
 temp2$date <- paste0(as.character(temp2$month),"/","1","/",as.character(temp2$year)) %>% mdy()
-temp2$rollmean<- rollmean(temp2$degC,k = 12, na.pad = T, align = "right")
+# Drop the random comma
+temp2$degC <-as.numeric(gsub(",","",as.character(temp2$degC)))
+# Replace missing value indicator of -99.99 with NA
+temp2 <- temp2 %>% mutate(degC = ifelse(degC == -99.99, NA, degC))
+# Calc 12 month rolling mean
+temp2$rollmean <- rollapply(temp2$degC,
+                            width = 12,
+                            FUN=function(x) mean(x, na.rm=TRUE), by = 1,
+                            partial = TRUE, fill = NA)
 
 temp <- ggplot(temp2)+
   geom_line(aes(date,degC),size = .2, color = "gray")+
   geom_line(aes(date, rollmean))+
-  scale_y_continuous(expand = c(-0.3,0))+
+#  scale_y_continuous(expand = c(-0.3,0))+
+  scale_y_continuous(limits = c(-2,2))+
   #scale_x_date(expand = c(0,0), breaks = c(as.Date(0)))+
   scale_x_date(expand = c(0,0))+
   labs(x = NULL)+
@@ -432,10 +461,10 @@ mod_df <- mod_df %>%
 
 para_gg <- ggplot(mod_df)+
   geom_line(aes(x = year,
-                y = parasitism), size = 3, color = "orange2" )+
+                y = parasitism), size = 2, color = "orange2" )+
   labs(x = NULL, y = "parasitism rate")+
   scale_x_date(limits = c(min(temp2$date), max(temp2$date)), expand = c(0,0))+
-  scale_y_continuous(limits = c(0,1))+
+  scale_y_continuous(limits = c(0,0.7))+
   themeo
 
 gridExtra::grid.arrange(tp,drought,temp,para_gg, ncol = 1)
@@ -463,7 +492,7 @@ library(tidybayes)    # easy means to investigate brms built models in a tidy fr
 library(modelr)       # tidy brms dependency
 library(strengejacke)
 
-# predicition function for brm pdp plot
+# prediction function for brm pdp plot
 pred_fun <- function(object, newdata) {
   mean(predict(object, newdata)[1], na.rm = TRUE)
 }
@@ -622,8 +651,6 @@ gridExtra::grid.arrange(SPEI36_bayes,parasitism_bayes,temp_bayes)
 #             screen = list(z = 120, x = -60)  )
 # 
 # 
-# 
-# 
 # # Gradient boosting exploration
 # # Load required packages
 # library(xgboost)
@@ -656,7 +683,7 @@ gridExtra::grid.arrange(SPEI36_bayes,parasitism_bayes,temp_bayes)
 # xgb.plot.importance(xgb.importance(model = pima.xgb))
 # xgb.plot.deepness(model = pima.xgb)
 # 
-# # Partial of diabetes test result on glucoe
+# # ??? Partial of diabetes test result on glucose ???
 # partial(pima.xgb, pred.var = "rollmean", plot = TRUE, train = X, rug = T)
 # partial(pima.xgb, pred.var = "SPEI36", plot = TRUE, train = X)
 # partial(pima.xgb, pred.var =  c("SPEI36", "rollmean"), plot = T, chull = T, train = X, progress = "text")
