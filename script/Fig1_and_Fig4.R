@@ -492,7 +492,9 @@ mod_df <- mod_df[complete.cases(mod_df), ]
 library(tidyverse)
 library(tidybayes)    # easy means to investigate brms built models in a tidy framework
 library(modelr)       # tidy brms dependency
-library(strengejacke)
+# library(strengejacke)  # this library does not work
+library(sjstats)      # replacement for strengejacke
+
 
 # prediction function for brm pdp plot
 pred_fun <- function(object, newdata) {
@@ -555,18 +557,23 @@ data.brms <- add_waic(data.brms)
 print(data.brms$waic)
 
 # Useful diagnostics
-# summary(data.brms)
-# plot(marginal_effects(data.brms), points = T)
-# plot(data.brms)
-# pairs(data.brms)
-# bayes_R2(data.brms)
-# launch_shinystan(data.brms)
+summary(data.brms)
+plot(marginal_effects(data.brms), points = T)
+plot(data.brms)
+pairs(data.brms)
+bayes_R2(data.brms)
+launch_shinystan(data.brms)
 
 # according to a "small effect" Cohen 1988
 ## significance test in the Bayesian framework, accept or reject a factor/model
-#We might want to say that a regression coeffcient x on predictor x is practically equivalent to zero if a
+#We might want to say that a regression coefficient x on predictor x is practically equivalent to zero if a
 #change across the \main range of x" produces only a negligible change in the predicted value ^y.
-equi_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+theme_bw()+coord_flip()
+
+# equi_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
+equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
+  theme_bw()+
+  coord_flip()
+
 
 library("bayesplot")
 color_scheme_set("mix-blue-red")
@@ -585,14 +592,16 @@ plot(hypothesis(data.brms, "rollmean:SPEI36 > 0"))
 
 library(RColorBrewer)
 
-# margianal effects plots with prediction intervals
+# Figure 4 in the main text
+# marginal effects plots with prediction intervals
 
 SPEI36_bayes <- mod_df %>%
   data_grid(SPEI36 = seq_range(SPEI36, n = 10), rollmean = seq_range(rollmean, n = 10), parasitism = seq_range(parasitism, n = 10)) %>%
   tidybayes::add_predicted_draws(data.brms) %>%
   ggplot(aes(x = SPEI36, y = raw_tp)) +
-  tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.99, .95, .8, .5), color = "black", show.legend = F) +
-  geom_jitter(data = mod_df, size = .1, width = .02) +
+  tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.95, .8, .5), color = "black", show.legend = F) +  
+  # tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.99, .95, .8, .5), color = "black", show.legend = F) +
+  geom_jitter(data = mod_df, size = .05, width = .02, alpha = 0.25) +
   scale_x_continuous(expand = c(0,0))+
   themeo+
   scale_fill_brewer()
@@ -601,8 +610,9 @@ temp_bayes <- mod_df %>%
   data_grid(SPEI36 = seq_range(SPEI36, n = 10), rollmean = seq_range(rollmean, n = 10), parasitism = seq_range(parasitism, n = 10)) %>%
   tidybayes::add_predicted_draws(data.brms) %>%
   ggplot(aes(x = rollmean, y = raw_tp)) +
-  tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.99, .95, .8, .5), color = "black", show.legend = F)+
-  geom_jitter(data = mod_df, size = .1, width = .02)+
+#  tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.99, .95, .8, .5), color = "black", show.legend = F)+
+  tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.95, .8, .5), color = "black", show.legend = F)+
+  geom_jitter(data = mod_df, size = .05, width = .02, alpha = 0.25)+
   scale_x_continuous(expand = c(0,0))+
   themeo+
   scale_fill_brewer()
@@ -611,8 +621,9 @@ parasitism_bayes  <-  mod_df %>%
   data_grid(SPEI36 = seq_range(SPEI36, n = 10), rollmean = seq_range(rollmean, n = 10), parasitism = seq_range(parasitism, n = 10)) %>%
   tidybayes::add_predicted_draws(data.brms) %>%
   ggplot(aes(x = parasitism, y = raw_tp)) +
-  tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.99, .95, .8, .5), color = "black", show.legend = F) +
-  geom_jitter(data = mod_df, size = .1, width = .02)+ 
+#  tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.99, .95, .8, .5), color = "black", show.legend = F) +
+  tidybayes::stat_lineribbon(aes(y = .prediction), .width = c(.95, .8, .5), color = "black", show.legend = F) +
+  geom_jitter(data = mod_df, size = .05, width = .02, alpha = 0.25)+ 
   scale_x_continuous(expand = c(0,0))+
   themeo+
   scale_fill_brewer()
