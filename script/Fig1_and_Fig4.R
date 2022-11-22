@@ -493,8 +493,8 @@ library(tidyverse)
 library(tidybayes)    # easy means to investigate brms built models in a tidy framework
 library(modelr)       # tidy brms dependency
 # library(strengejacke)  # this library does not work
-library(sjstats)      # replacement for strengejacke
-
+# library(sjstats)      # replacement for strengejacke
+library(bayestestR)   # replacement for sjstats
 
 # prediction function for brm pdp plot
 pred_fun <- function(object, newdata) {
@@ -570,19 +570,20 @@ launch_shinystan(data.brms)
 #change across the \main range of x" produces only a negligible change in the predicted value ^y.
 
 # equi_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
-equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
-  theme_bw()+
-  coord_flip()
+bayestestR::equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+theme_bw()+coord_flip()
 
 
+
+
+
+# Figure S5 the traceplot diangnostic with posteriors
 library("bayesplot")
 color_scheme_set("mix-blue-red")
 coef_plot <- mcmc_areas(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"))
 color_scheme_set("viridis")
 tracer <- mcmc_trace(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"), 
                      facet_args = list(ncol = 1, strip.position = "left"))
-
-grid.arrange(coef_plot, tracer, ncol = 2)
+gridExtra::grid.arrange(coef_plot, tracer, ncol = 2)
 
 
 # posterior plots
