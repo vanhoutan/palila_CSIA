@@ -3,8 +3,11 @@ library(MixSIAR)
 library(plyr)
 library(dplyr)
 library(ggplot2)
+# had to download JAGS directly here https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Mac%20OS%20X/JAGS-4.3.1.pkg/download
+# otherwise would not load
 library(rjags)
 library(R2jags)
+
 
 ##############################
 ###  Custom ggPlot theme   ###
@@ -85,8 +88,14 @@ x = 1
   #run model
   jags.1 <- run_model(run="short",mix,source,discr,model_filename,
                       alpha.prior = TP_prior,resid_err,process_err)
+ 
+   
+# getting error message starting at the next line
+# Error in UseMethod("depth") : 
+#  no applicable method for 'depth' applied to an object of class "NULL"
   
   plot_continuous_var(jags.1, mix, source, output_options)
+  
   
   rm(jags.1,model_filename)
 
@@ -170,6 +179,9 @@ x = 1
   
   # Plot of Diet vs. Cont effect
   # Page 370 in Francis et al (2011)
+  
+  # Figure S8b in the supplement
+  
   ggplot2::ggplot(data=df,ggplot2::aes(x=x,y=median)) +
     ggplot2::geom_line(ggplot2::aes(x=x, y=median,group=source,colour=source),size=1.5) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin=low, ymax=high, group=source, fill=source), alpha=0.35) +
@@ -180,6 +192,8 @@ x = 1
     scale_color_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_fill_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_x_continuous(expand = c(0,0))+
+    scale_y_continuous(expand = c(0,0), 
+                       breaks = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))+
     themeo+
     theme(strip.background = element_blank(),
           panel.border = element_rect(colour = "black", fill=NA, size=.5),
@@ -187,6 +201,7 @@ x = 1
           strip.text=element_text(hjust=0),
           legend.position = c(0.8,0.5))
   
+  # Figure 3 in the main text
   # proportional plot through time with 95% prediction intervals shown
   ggplot2::ggplot(data=df,ggplot2::aes(x=x,y=median)) +
     geom_area(aes(x = x, y = median, fill = source, group = source), position = 'stack', show.legend = F, alpha = .85)+
@@ -197,13 +212,15 @@ x = 1
     annotate("text", x = 1980, y = .7, label = "MAMANE/NAIO")+
     annotate("text", x = 1900, y = .1, label = "SPIDER")+
    
-    ggplot2::labs(title = fac.lab) +
+    ggplot2::labs(title = fac.lab) +
     ggplot2::ylab("proportion of diet") +
     ggplot2::xlab(label) +
     scale_color_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_fill_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_x_continuous(expand = c(0,0))+
-    scale_y_continuous(expand = c(0,0))+
+    scale_y_continuous(expand = c(0,0), 
+                       breaks = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))+
+    # scale_y_continuous(expand = c(0,0))+
     
     themeo+
     theme(strip.background = element_blank(),
