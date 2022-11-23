@@ -569,10 +569,9 @@ launch_shinystan(data.brms)
 #We might want to say that a regression coefficient x on predictor x is practically equivalent to zero if a
 #change across the \main range of x" produces only a negligible change in the predicted value ^y.
 
+# code in line below does not work, needed to update package to bayestestR
 # equi_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
 bayestestR::equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+theme_bw()+coord_flip()
-
-
 
 
 
