@@ -204,8 +204,12 @@ total$year <- paste0("1","/","1","/",as.character(total$year)) %>% mdy()
 ggplot()+
   # geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1)+
   # add transparency to lines of model runs
-  geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1, alpha = 0.4)+
+  geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), color = "#c8be30", size = .1, alpha = 0.15)+
   #geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
+  scale_x_continuous(expand = c(0,0), breaks =  c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000,2010))+
+  scale_y_continuous(limits = c(1.75,2.45), breaks =  c(1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4))+
+  labs(x=NULL)+
+  labs(y="trophic position")+
   themeo
 
 
@@ -225,11 +229,12 @@ tp
 # what ends up becoming Figure 1 time series of palila TP
 ggplot(null_df_quant)+
   geom_ribbon( aes(x=year,ymin=lower,ymax=upper), size = .1, alpha = .5)+
-  geom_line( aes(x=year,y = median), color = "#ffde17", size = 1.5)+
+  geom_line( aes(x=year,y = median), size = 1)+
   #geom_violin(data = total,aes(x=year, y= tp, group = year), width = 20)+
-  #scale_y_continuous(limits = c(1.5,2.5))+
+  scale_y_continuous(limits = c(1.75,2.45), breaks =  c(1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4))+
   scale_x_date(expand = c(0,0))+
   labs(x=NULL)+
+  labs(y="trophic position")+
   themeo
 
 # plotting the traverse that Palila takes across constant TL of prey items
