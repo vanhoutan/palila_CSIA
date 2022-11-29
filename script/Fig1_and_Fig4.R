@@ -200,7 +200,10 @@ null_df_quant <- null_df %>%
 null_df_quant$year <- paste0("1","/","1","/",as.character(null_df_quant$year)) %>% mdy()
 total$year <- paste0("1","/","1","/",as.character(total$year)) %>% mdy()
 
-## RF/ICE looking plot with multiple runs, no mean
+## What becomes Figure 1 in the main text
+# RF/ICE looking plot with multiple runs, no mean
+# this shows 
+
 ggplot()+
   # geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1)+
   # add transparency to lines of model runs
@@ -213,7 +216,7 @@ ggplot()+
   themeo
 
 
-# b/w version of what ends up becoming Figure 1 time series of palila TP
+# Figure S4a time series of palila TP with boxplot
 tp <- ggplot(null_df_quant)+
   geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
   geom_ribbon( aes(x=year,ymin=lower,ymax=upper), size = .1, alpha = .5)+
@@ -226,7 +229,7 @@ tp <- ggplot(null_df_quant)+
   themeo
 tp
 
-# what ends up becoming Figure 1 time series of palila TP
+# median trend line for Figure 1 time series of palila TP
 ggplot(null_df_quant)+
   geom_ribbon( aes(x=year,ymin=lower,ymax=upper), size = .1, alpha = .5)+
   geom_line( aes(x=year,y = median), size = 1)+
@@ -249,6 +252,7 @@ source_csv_plot$ymin <- source_csv_plot$MeanTL - source_csv_plot$SDTL*1.96
 source_csv_plot$ymax <- source_csv_plot$MeanTL + source_csv_plot$SDTL*1.96 
 source_csv_plot$year <- as.Date(source_csv_plot$year)
 
+# Figure S8
 tp+
   geom_hline(data = source_csv_plot, aes(yintercept = MeanTL, color = spp), alpha = .7, size = 2)+
   scale_x_date(expand = c(0,0))+
@@ -274,7 +278,7 @@ write.csv(mix_csv,"data/mixing model/mixture_data2.csv")
 #cleanup
 rm(new_df,null_df,i,tp_est, tp_predict,round,mix_csv, mod91, new_month,prediction, GetTP, source_csv_plot,source_csv)
 
-
+# Figure S7
 # Validating what amino acids are source vs trophic
 CSSIAPalila_sub <- CSSIAPalila %>% 
   filter(value == "ave") %>% 
@@ -310,6 +314,7 @@ SPEI <- read.csv('./data/environ_covars/spei_-155.25_19.75.csv',header = T, skip
 SPEI$year <- seq.Date(from = mdy('01/01/1901'), by = "month" , length.out = nrow(SPEI)) #seq(1:nrow(SPEI))
 str(SPEI)
 
+# B/w drought series plot
 # units is months since 1901-01
 # range: January 1901, December 2011
 drought <- ggplot(SPEI)+
@@ -319,6 +324,7 @@ drought <- ggplot(SPEI)+
   themeo
 drought
 
+## color drought series plot, Figure S4
 ## evapotranspiration plot over the whole dataset
 drought <- ggplot(SPEI)+
   geom_line(aes(x = ((year)), y = SPEI01),size = .1, color = "gray")+
@@ -365,6 +371,7 @@ temp2 <- temp2 %>%
   )
 print(temp2)
 
+# Figure S4 components 
 # modify temp df
 # Create a date formatted column
 temp2$date <- paste0(as.character(temp2$month),"/","1","/",as.character(temp2$year)) %>% mdy()
@@ -420,7 +427,7 @@ mod_df <- empty_yrs %>%
          lower = na.approx(lower, na.rm = F))
 
 
-# generating an indice of caterpillar parasitism rate
+# generating an index of caterpillar parasitism rate
 intro_date <- mdy('01/01/1950')    # introduction date
 known_date1 <- mdy('01/01/1997')   # date(s) for known data
 
@@ -468,16 +475,17 @@ mod_df <- mod_df %>%
 
 para_gg <- ggplot(mod_df)+
   geom_line(aes(x = year,
-                y = parasitism), size = 2, color = "orange2" )+
+                y = parasitism), size = 1, color = "orange2" )+
   labs(x = NULL, y = "parasitism rate")+
   scale_x_date(limits = c(min(temp2$date), max(temp2$date)), expand = c(0,0))+
   scale_y_continuous(limits = c(0,0.7))+
   themeo
 
+# Full version of figure S4
 gridExtra::grid.arrange(tp,drought,temp,para_gg, ncol = 1)
 
 
-# plot to check 
+# plot variables for Bayesian regression, to inspect and check 
 par(mfrow=c(2,3))
 plot(mod_df$year, mod_df$raw_tp)
 plot(mod_df$year, mod_df$median)
@@ -493,12 +501,12 @@ mod_df <- mod_df[complete.cases(mod_df), ]
      #    Fig 4 - model predicting TP given various environmental drivers    #
 ####################################################################################
 
-# load librares
+# load libraries
 library(tidyverse)
 library(tidybayes)    # easy means to investigate brms built models in a tidy framework
 library(modelr)       # tidy brms dependency
 # library(strengejacke)  # this library does not work
-# library(sjstats)      # replacement for strengejacke
+library(sjstats)      # replacement for strengejacke
 library(bayestestR)   # replacement for sjstats
 
 # prediction function for brm pdp plot
