@@ -72,22 +72,27 @@ GetTP <- function(anID){
   
   # Nielsen TEF
   ## B is ours, empirically derived difference between trophic and source AAs in primary producers
-   b =   2.1
-   TEF = 5.9
+  # b =   2.1
+  # TEF = 5.9
   
-   num_of_draws = 1000
+  b =   1.6   
+  TEF = 5.3
+  
+   num_of_draws = 5000
    ## num_of_draws = 100
   
   ala.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ala")) , sd = as.numeric(subset(anID, value == "sd", select = "ala"))) # alanine
   glu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamic acid
-  leu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "leu")) , sd = as.numeric(subset(anID, value == "sd", select = "leu"))) # leucine
   pro.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "pro")) , sd = as.numeric(subset(anID, value == "sd", select = "pro"))) # proline
+  
   val.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "val")) , sd = as.numeric(subset(anID, value == "sd", select = "val"))) # valine
- 
+  leu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "leu")) , sd = as.numeric(subset(anID, value == "sd", select = "leu"))) # leucine
+  
   thr.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "thr")) , sd = as.numeric(subset(anID, value == "sd", select = "thr"))) # threonine
   ser.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ser")) , sd = as.numeric(subset(anID, value == "sd", select = "ser"))) # serine
   phe.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "phe")) , sd = as.numeric(subset(anID, value == "sd", select = "phe"))) # phenylalanine
  
+#  TPforID <- (((((glu.est)/1)) - ((thr.est+ser.est+phe.est)/3) - b)/TEF ) + 1  # function to estimate TP via source and trophic AA with constants 
   TPforID <- (((((glu.est)/1)) - ((thr.est+ser.est+phe.est)/3) - b)/TEF ) + 1  # function to estimate TP via source and trophic AA with constants 
   
   return(TPforID)
@@ -110,14 +115,14 @@ str(total)
 
 # is there annual phenology over the entire dataset?
 ggplot(total,aes(x=MONTH, y= tp, color = year %>% as.factor()))+
-  geom_point(position = "jitter", size = .05)+
+  geom_point(position = "jitter", size = .05, alpha = 0.5)+
   themeo
 
 # is there annual phenology just within the year 1991 (n=20) only?
 total %>%  
   filter(year == 1991) %>% 
     ggplot(aes(x=MONTH, y= tp, color = year %>% as.factor()))+
-      geom_point(position = "jitter", size = .05)+
+      geom_point(position = "jitter", size = .05, alpha = 0.5)+
       themeo
 
 
@@ -136,7 +141,7 @@ prediction <- predict(mod91,interval = "confidence") %>% as.data.frame()
 
 # plot 1991 TP phenology with fitted model
 ggplot(filter(total, year == 1991) )+
-  geom_point(aes(x=MONTH, y= tp), position = "jitter", size = .05)+
+  geom_point(aes(x=MONTH, y= tp), position = "jitter", size = .05, alpha = 0.5)+
   geom_ribbon(aes(x=MONTH, ymin = prediction$lwr, ymax = prediction$upr), alpha = .5)+
   geom_line(aes(x=MONTH,y=prediction$fit))+
   themeo+
@@ -200,17 +205,16 @@ null_df_quant <- null_df %>%
 null_df_quant$year <- paste0("1","/","1","/",as.character(null_df_quant$year)) %>% mdy()
 total$year <- paste0("1","/","1","/",as.character(total$year)) %>% mdy()
 
-## What becomes Figure 1 in the main text
+## What becomes a component of Figure 1 in the main text
 # RF/ICE looking plot with multiple runs, no mean
-# this shows 
-
 ggplot()+
   # geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1)+
   # add transparency to lines of model runs
   geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), color = "#c8be30", size = .1, alpha = 0.15)+
   #geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
   scale_x_continuous(expand = c(0,0), breaks =  c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000,2010))+
-  scale_y_continuous(limits = c(1.75,2.45), breaks =  c(1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4))+
+  #scale_y_continuous(limits = c(1.75,2.45), breaks =  c(1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4))+
+  scale_y_continuous(limits = c(1.98,2.65), breaks =  c(2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7))+
   labs(x=NULL)+
   labs(y="trophic position")+
   themeo
@@ -234,7 +238,7 @@ ggplot(null_df_quant)+
   geom_ribbon( aes(x=year,ymin=lower,ymax=upper), size = .1, alpha = .5)+
   geom_line( aes(x=year,y = median), size = 1)+
   #geom_violin(data = total,aes(x=year, y= tp, group = year), width = 20)+
-  scale_y_continuous(limits = c(1.75,2.45), breaks =  c(1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4))+
+  scale_y_continuous(limits = c(1.98,2.65), breaks =  c(2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7))+
   scale_x_date(expand = c(0,0))+
   labs(x=NULL)+
   labs(y="trophic position")+
@@ -243,7 +247,7 @@ ggplot(null_df_quant)+
 # plotting the traverse that Palila takes across constant TL of prey items
 # could be interesting supplemental figure that shows 3 major forage item groups
 
-source_csv <- read.csv("./data/mixing model/source_data.csv") # estimated prey item TL, dev in prey_TL.R saved for mixing model as .csv
+source_csv <- read.csv("data/mixing model/source_data.csv") # estimated prey item TL, dev in prey_TL.R saved for mixing model as .csv
 source_csv_plot <- rbind(source_csv,source_csv)  
 source_csv_plot$year <- NULL
 source_csv_plot$year[1:(nrow(source_csv_plot)/2)] <- '1/1/1890'  %>% mdy()
@@ -527,12 +531,13 @@ str(mod_df)
 # Fit a standard linear regression with independent error
 # potential models of interest
 formula1 <- median ~ rollmean + SPEI36 + rollmean*SPEI36
+#formula1 <- raw_tp | trunc(lb = 1) ~ rollmean + SPEI36 + parasitism
 #formula2 <- raw_tp | trunc(lb = 1) ~ rollmean + SPEI36 + rollmean*SPEI36
 #formula2 <- raw_tp | trunc(lb = 1) ~ rollmean + SPEI36 + parasitism #+ rollmean*SPEI36 + parasitism*SPEI36
 formula2 <- raw_tp | trunc(lb = 1) ~ rollmean + SPEI36 + parasitism + rollmean*SPEI36 + parasitism*SPEI36
+# formula2 <- raw_tp ~ rollmean + SPEI36 + parasitism + rollmean*SPEI36 + parasitism*SPEI36  # trunc() seemed to be causing error below
 formula3 <- median ~ rollmean + SPEI36 
 formula4 <- raw_tp ~ rollmean + SPEI36 
-
 # concatenate in to a list for the loop build
 formula_list <- list(formula1,formula2,formula3,formula4)
 
@@ -567,11 +572,13 @@ data.brms = brm(formula_list[[each_formula]],
 )
 
 data.brms <- add_waic(data.brms)
-print(data.brms$waic)
+# data.brms <- add_criterion(data.brms, c("waic"))   ## getting deprecation warning on "add_waic" so tried this 
+print(data.brms$waic)  ## still getting null values here
 
 # Useful diagnostics
 summary(data.brms)
-plot(marginal_effects(data.brms), points = T)
+# plot(marginal_effects(data.brms), points = T)      # this function is deprecated
+plot(conditional_effects(data.brms), points = T)
 plot(data.brms)
 pairs(data.brms)
 bayes_R2(data.brms)
@@ -584,7 +591,9 @@ launch_shinystan(data.brms)
 
 # code in line below does not work, needed to update package to bayestestR
 # equi_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
-bayestestR::equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+theme_bw()+coord_flip()
+bayestestR::equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
+  theme_bw()+
+  coord_flip()
 
 
 

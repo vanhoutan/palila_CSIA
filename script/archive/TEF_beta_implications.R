@@ -1,6 +1,6 @@
 library(tidyverse)
 
-data <- read.csv('/Users/tgagne/Palila_2018/data/palila_prey/palila_prey.csv') %>% filter(value == "ave") %>% select(ucdavis_id,spp,glu,phe)
+data <- read.csv('data/palila_prey/palila_prey.csv') %>% filter(value == "ave") %>% select(ucdavis_id,spp,glu,phe)
 
 str(data)
 

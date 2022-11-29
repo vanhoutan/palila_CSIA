@@ -1,9 +1,10 @@
+# read in library
 library(tidyverse)
 
 
 # read in CSIA data from both prey and palila
-prey_data <- read.csv('/Users/tgagne/Palila_2018/data/palila_prey/palila_prey.csv')
-CSSIAPalila <- read.csv('/Users/tgagne/Palila_2018/data/palila_samples/Palila_CSSIA_Aug20.csv')
+prey_data <- read.csv('data/palila_prey/palila_prey.csv')
+CSSIAPalila <- read.csv('data/palila_samples/Palila_CSSIA_Aug20.csv')
 
 all_aa <- merge(prey_data,CSSIAPalila, all = T)                                     # merge them
 all_aa <- all_aa %>% filter(value == "ave")                                         # only pull out the ave
@@ -33,7 +34,7 @@ all_aa_long %>%
   filter(tp < 4 & tp > 0) %>% 
   ggplot() +
   geom_tile(aes(x = TEF, y = beta, fill = tp))+
-  geom_text(aes(x = TEF, y = beta, label = round(tp,2)))+
+#  geom_text(aes(x = TEF, y = beta, label = round(tp,2)))+
   scale_fill_distiller(palette = "Spectral")+
   facet_wrap(~spp)
 
@@ -59,11 +60,6 @@ all_aa_long %>%
   filter(spp == "palila") %>% 
   filter(beta == betas[1],
          TEFS == TEFS[1])
-
-
-
-
-
 
 
 all_aa_long %>% 
