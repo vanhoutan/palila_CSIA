@@ -70,16 +70,17 @@ GetTP <- function(anID){
   ## b = 8.4
   ## TEF = 7.6
   
-  # Nielsen TEF
-  ## B is ours, empirically derived difference between trophic and source AAs in primary producers
+  # b is derived from Chikaraishi et al 2009, using difference between trp and src AAs in primary producers
+  # Nielsen et al 2015 described multiple ways to derive TEF based on data
+  # we followed the guidance of both studies
   # b =   2.1
   # TEF = 5.9
   
   b =   1.6   
   TEF = 5.3
-  
-   num_of_draws = 5000
-   ## num_of_draws = 100
+
+  ## num_of_draws = 100
+   num_of_draws = 5000 ## upped the number of random variates generated
   
   ala.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ala")) , sd = as.numeric(subset(anID, value == "sd", select = "ala"))) # alanine
   glu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamic acid
