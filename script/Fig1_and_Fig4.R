@@ -278,7 +278,7 @@ tp+
     spp = "PALI")
 
 # write.csv(mix_csv,"data/mixing model/mixture_data.csv")
-#### paused this as was already createed using revised dervied TEF and b values
+#### paused this as was already created using revised derived TEF and b values
 # write.csv(mix_csv,"data/mixing model/mixture_data2.csv")
 
 #cleanup
