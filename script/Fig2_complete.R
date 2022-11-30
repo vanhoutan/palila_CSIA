@@ -47,14 +47,16 @@ GetTP <- function(anID){
   
   num_of_draws = 1000
   
-  # Chikaraishi
-  #b = 8.4
-  #TEF = 7.6
+  # Chikaraishi standard is b = 8.4 TEF = 7.6
+  # b =   2.1
+  # TEF = 5.9
   
-  # Nielsen TEF and our Beta, which is the dif between trophic and source amino acids at the primary producer level
-  b =   2.1
-  TEF = 5.9
-  
+  # b below is derived from methods in Chikaraishi et al 2009, using difference between trp and src AAs in primary producers
+  # Nielsen et al 2015 described multiple ways to derive TEF based on multiple AA data
+  # we followed the guidance of both studies
+  b =   1.6   
+  TEF = 5.3
+    
   # trophic amino acids
   ala.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ala")) , sd = as.numeric(subset(anID, value == "sd", select = "ala"))) # alanine
   glu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamic acid

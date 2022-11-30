@@ -116,14 +116,14 @@ str(total)
 
 # is there annual phenology over the entire dataset?
 ggplot(total,aes(x=MONTH, y= tp, color = year %>% as.factor()))+
-  geom_point(position = "jitter", size = .05, alpha = 0.5)+
+  geom_point(position = "jitter", size = .25, alpha = 0.25)+
   themeo
 
 # is there annual phenology just within the year 1991 (n=20) only?
 total %>%  
   filter(year == 1991) %>% 
     ggplot(aes(x=MONTH, y= tp, color = year %>% as.factor()))+
-      geom_point(position = "jitter", size = .05, alpha = 0.5)+
+      geom_point(position = "jitter", size = .25, alpha = 0.5)+
       themeo
 
 
@@ -142,7 +142,7 @@ prediction <- predict(mod91,interval = "confidence") %>% as.data.frame()
 
 # plot 1991 TP phenology with fitted model
 ggplot(filter(total, year == 1991) )+
-  geom_point(aes(x=MONTH, y= tp), position = "jitter", size = .05, alpha = 0.5)+
+  geom_point(aes(x=MONTH, y= tp), position = "jitter", size = .25, alpha = 0.5)+
   geom_ribbon(aes(x=MONTH, ymin = prediction$lwr, ymax = prediction$upr), alpha = .5)+
   geom_line(aes(x=MONTH,y=prediction$fit))+
   themeo+
@@ -215,7 +215,7 @@ ggplot()+
   #geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
   scale_x_continuous(expand = c(0,0), breaks =  c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000,2010))+
   #scale_y_continuous(limits = c(1.75,2.45), breaks =  c(1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4))+
-  scale_y_continuous(limits = c(1.98,2.65), breaks =  c(2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7))+
+  scale_y_continuous(limits = c(1.98,2.7), breaks =  c(2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7))+
   labs(x=NULL)+
   labs(y="trophic position")+
   themeo
@@ -239,7 +239,7 @@ ggplot(null_df_quant)+
   geom_ribbon( aes(x=year,ymin=lower,ymax=upper), size = .1, alpha = .5)+
   geom_line( aes(x=year,y = median), size = 1)+
   #geom_violin(data = total,aes(x=year, y= tp, group = year), width = 20)+
-  scale_y_continuous(limits = c(1.98,2.65), breaks =  c(2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7))+
+  scale_y_continuous(limits = c(1.98,2.7), breaks =  c(2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7))+
   scale_x_date(expand = c(0,0))+
   labs(x=NULL)+
   labs(y="trophic position")+
@@ -572,8 +572,8 @@ data.brms = brm(formula_list[[each_formula]],
                 family = gaussian()
 )
 
-data.brms <- add_waic(data.brms)
-# data.brms <- add_criterion(data.brms, c("waic"))   ## getting deprecation warning on "add_waic" so tried this 
+# data.brms <- add_waic(data.brms)  ## getting deprecation warning on "add_waic" so tried this 
+data.brms <- add_criterion(data.brms, criterion = "waic")   
 print(data.brms$waic)  ## still getting null values here
 
 # Useful diagnostics
@@ -592,21 +592,22 @@ launch_shinystan(data.brms)
 
 # code in line below does not work, needed to update package to bayestestR
 # equi_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
-bayestestR::equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
-  theme_bw()+
-  coord_flip()
 
+# bayestestR::equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+ theme_bw()+ coord_flip()
+bayestestR::equivalence_test(
+  x = data.brms,
+  range = c(-sd(mod_df$raw_tp)*.2,
+            sd(mod_df$raw_tp)*.2))
 
-
-# Figure S5 the traceplot diangnostic with posteriors
+# Figure S5 the traceplot diagnostic with posteriors
 library("bayesplot")
+bayesplot::
 color_scheme_set("mix-blue-red")
 coef_plot <- mcmc_areas(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"))
 color_scheme_set("viridis")
 tracer <- mcmc_trace(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"), 
                      facet_args = list(ncol = 1, strip.position = "left"))
 gridExtra::grid.arrange(coef_plot, tracer, ncol = 2)
-
 
 # posterior plots
 plot(hypothesis(data.brms, "rollmean > 0"))
