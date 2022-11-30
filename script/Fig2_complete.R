@@ -124,21 +124,21 @@ density
 
 
 source_csv <- total %>% dplyr::group_by(spp) %>% dplyr::summarise(MeanTL = mean(tp), SDTL = sd(tp), n = 1000)
-#write.csv(source_csv, "./data/mixing model/source_data.csv", row.names = F)
+# write.csv(source_csv, "./data/mixing model/source_data.csv", row.names = F)
 
 # discr data
 disc_data <- data.frame( Sources = unique(source_csv$spp), MeanTL = 1, SDTL = 0)
 # write.csv(disc_data, "./data/mixing model/discrimination_data.csv", row.names = F)
-
 
 # # merge NAIO/MAMANE, CYDIA/FOLCAT, ARTHO/SPIDER
 CYDIA_ARTHO_FOLCAT <- source_csv %>% filter(spp %in% c('CYDIA', 'ARTHO', "FOLCAT")) %>% summarise(spp = 'CYDIA_ARTHO_FOLCAT', MeanTL = mean(MeanTL), SDTL = mean(SDTL), n = 1000)
 MAMANE_NAIO <- source_csv %>% filter(spp %in% c('MAMANE', 'NAIO')) %>% summarise(spp = 'MAMANE_NAIO', MeanTL = mean(MeanTL), SDTL = mean(SDTL), n = 1000)
 SPIDER <- source_csv %>% filter(spp %in% c('SPIDER')) %>% summarise(spp = 'SPIDER', MeanTL = mean(MeanTL), SDTL = mean(SDTL), n = 1000)
 
-# group_source <- rbind(CYDIA_ARTHO_FOLCAT,MAMANE_NAIO,SPIDER)
-# #write.csv(group_source, "./data/mixing model/source_data.csv", row.names = F)
-#
+group_source <- rbind(CYDIA_ARTHO_FOLCAT,MAMANE_NAIO,SPIDER)
+write.csv(group_source, "./data/mixing model/source_data.csv", row.names = F)
+
+
 # # discr data
 # disc_data <- data.frame( Sources = unique(group_source$spp), MeanTL = 1, SDTL = 0)
 # # write.csv(disc_data, "./data/mixing model/discrimination_data.csv", row.names = F)

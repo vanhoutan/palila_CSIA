@@ -278,7 +278,8 @@ tp+
     spp = "PALI")
 
 # write.csv(mix_csv,"data/mixing model/mixture_data.csv")
-write.csv(mix_csv,"data/mixing model/mixture_data2.csv")
+#### paused this as was already createed using revised dervied TEF and b values
+# write.csv(mix_csv,"data/mixing model/mixture_data2.csv")
 
 #cleanup
 rm(new_df,null_df,i,tp_est, tp_predict,round,mix_csv, mod91, new_month,prediction, GetTP, source_csv_plot,source_csv)

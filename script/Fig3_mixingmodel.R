@@ -26,8 +26,9 @@ sppx<- "PALI"
 x = 1
 
 #for(x in 1:length(sppx)){
-  mix<-read.csv('data/mixing model/mixture_data.csv')
-  str(mix)
+#  mix<-read.csv('data/mixing model/mixture_data.csv')
+mix<-read.csv('data/mixing model/mixture_data2.csv')
+str(mix)
   mix<-subset(mix, spp == sppx[x])
   write.csv(mix,file = "data/mixing model/mixture_data_spp.csv")
   
@@ -95,6 +96,8 @@ x = 1
 #  no applicable method for 'depth' applied to an object of class "NULL"
   
   plot_continuous_var(jags.1, mix, source, output_options)
+  
+# Error in plot_continuous_var(jags.1, mix, source, output_options) : object 'output_options' not found  
   
   
   rm(jags.1,model_filename)
