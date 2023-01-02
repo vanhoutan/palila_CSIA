@@ -437,7 +437,7 @@ mod_df <- empty_yrs %>%
 intro_date <- mdy('01/01/1950')    # introduction date
 known_date1 <- mdy('01/01/1997')   # date(s) for known data
 
-# what years had no parasititism
+# what years had no parasitism
 zero_index <- which(empty_yrs$year %in% c(first(empty_yrs$year),intro_date), arr.ind=TRUE)
 # what years were after the introduction
 parasite_years_index <- which(empty_yrs$year %in% c(intro_date, last(empty_yrs$year)), arr.ind=TRUE)
