@@ -200,8 +200,34 @@ Beta_tot <- cbind(Beta1, Beta2$`Pro-Phe`, Beta3$`Thr-Phe`, Beta4$`Glu-Lys`, Beta
 names(Beta_tot)    # check on col names, prob should rename
 setnames(Beta_tot, old=c("Beta2$`Pro-Phe`", "Beta3$`Thr-Phe`", "Beta4$`Glu-Lys`", "Beta5$`Pro-Lys`", "Beta6$`Thr-Lys`"), 
          new=c("Pro-Phe", "Thr-Phe", "Glu-Lys", "Pro-Lys", "Thr-Lys"))   # first col is already correctly named from cbind
+# what I have been waiting for!!!
+# reshape df from wide to long using gather()
+Beta_gather <- gather(Beta_tot, key="beta", value="value", 2:7)
 
 # bring in metadata from original data sheet
+# remove the duplicate rows for SD
 data<-subset(data, value == "ave")
-Beta_total<-merge(data,Beta_tot, by="ucdavis_id")
+names(data)    # check on col names for cleaning final df
+# remove unnecessary rows for the AAs, etc
+data_sm<-subset(data, select = -c(value, ala, asp, glu, gly, lys, leu, phe, pro, val, ser, thr))
+Beta_total<-merge(data_sm,Beta_gather, by="ucdavis_id")
+
+#### make a boxplot to compare results of different Beta formulations
+
+ggplot(Beta_total, aes(x = photo, y = value)) +
+  themeKV +
+  theme(strip.background = element_blank(),
+        axis.line = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=.5),
+        axis.ticks.length = unit(-.15, "cm"), 
+        axis.text.x = element_text(margin = margin(t = 10, unit = "pt")),
+        axis.title.y = element_text(margin = margin(-2,-2,-2,-2)),
+        axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))) +
+  geom_point(alpha=0.05, color="#E69F00", position="jitter", shape = 16, size = 3) +  
+  geom_boxplot(alpha=0, colour = "black", linewidth = 0.25) +
+#  scale_y_log10(limits = c(1,10000)) +
+#  xlab("element") +
+  ylab("d15N") +
+  facet_wrap(~beta, ncol=6)
+
 
