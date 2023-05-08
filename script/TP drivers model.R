@@ -9,11 +9,10 @@ library(itsmr)        # time series
 library(tidyr)        # gathering and spreading
 library(lubridate)    # date handling
 library(zoo)          # roll mean
-library(pdp)
+library(pdp)          # partial dependency plot building
 
-##############################
-###  Custom ggPlot theme   ###
-##############################
+
+####  Custom ggPlot theme
 themeo <- ggplot2::theme_classic()+
   ggplot2::theme(strip.background = element_blank(),
         axis.line = element_blank(),
@@ -25,8 +24,8 @@ themeo <- ggplot2::theme_classic()+
         legend.title=element_blank(),
         strip.text=element_text(hjust=0) )
 
-#read in an merge palila data
-# palila UC_davis and kyle ID cross reference table
+# read in and merge palila data
+# palila UC_davis and Kyle's ID cross reference table
 Palila_meta <- read.delim('data/palila_samples/palila_sample_metadata_MBA_UCDavis_IDs2.txt')
 # UC davis stable isotope data
 CSSIAPalila <- read.csv('data/palila_samples/Palila_CSSIA_Aug20.csv')
