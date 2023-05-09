@@ -42,7 +42,7 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen
 
 
 # set # of random variates drawn from norm distrib, outside of 
-num_draws = 100
+num_draws = 37
 
 # start with Beta formulation #1 
 GetBeta1 <- function(anID){
@@ -208,29 +208,28 @@ Beta_gather <- gather(Beta_tot, key="beta", value="value", 2:7)
 # bring in metadata from original data sheet
 # remove the duplicate rows for SD
 data<-subset(data, value == "ave")
-names(data)    # check on col names for cleaning final df
-# remove unnecessary rows for the AAs, etc
+names(data)    # check on col names for orderly cleaning of final df
+# remove unnecessary cols for the AAs, etc
 data_sm<-subset(data, select = -c(value, ala, asp, glu, gly, lys, leu, phe, pro, val, ser, thr))
 Beta_total<-merge(data_sm,Beta_gather, by="ucdavis_id")
 
+
 #### make a boxplot to compare results of different Beta formulations
-
-
-ggplot(Beta_total, aes(x = photo, y = value)) +
+ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   themeKV +
   theme(strip.background = element_blank(),
         axis.line = element_blank(),
-        panel.border = element_rect(colour = "black", fill=NA, size=.5),
+        panel.border = element_rect(colour = "black", size=.5),
         axis.ticks.length = unit(-.15, "cm"), 
         axis.text.x = element_blank(),
         axis.title.x = element_blank(),
         axis.ticks.x = element_blank(),
         axis.title.y = element_text(margin = margin(-2,-2,-2,-2)),
         axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))) +
-  geom_point(alpha=0.02, color="black", position="jitter", shape = 16, size = 3) +  
-  geom_boxplot(alpha=0, colour = "black", linewidth = 0.25) +
-  scale_y_continuous(limits = c(-29,10),
-                     breaks = c(-30, -25, -20, -15, -10, -5, 0, 5, 10)) +
+  geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
+  geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25) +
+  scale_fill_manual(values=c("#e4eb9a", "#99cc99")) +
+  scale_y_continuous(breaks = c(-30, -25, -20, -15, -10, -5, 0, 5, 10)) +
   ylab("β (‰)") +
   facet_wrap(~beta, ncol=6)
 
