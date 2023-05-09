@@ -211,10 +211,12 @@ data<-subset(data, value == "ave")
 names(data)    # check on col names for orderly cleaning of final df
 # remove unnecessary cols for the AAs, etc
 data_sm<-subset(data, select = -c(value, ala, asp, glu, gly, lys, leu, phe, pro, val, ser, thr))
+# finally here... so good
 Beta_total<-merge(data_sm,Beta_gather, by="ucdavis_id")
 
 
-#### make a boxplot to compare results of different Beta formulations
+#### make a box plot to compare results of different Beta formulations
+# just completely imitating the form of Fig 5 from Besser et al 2022
 ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   themeKV +
   theme(strip.background = element_blank(),
