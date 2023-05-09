@@ -12,6 +12,8 @@ library(tidyr)        # gathering and spreading
 library(zoo)          # roll mean
 library(ggthemes)     # helpful ggplot themes
 library(forcats)
+library(scales)
+library(RColorBrewer) # prety colors
 
 
 # Custom ggPlot theme
@@ -20,7 +22,7 @@ themeKV <- theme_few()+
         axis.line = element_blank(),
         axis.text.x = element_text(colour = "black", margin = margin(0.2, unit = "cm")),
         axis.text.y = element_text(colour = "black", margin = margin(c(1, 0.2), unit = "cm")),
-        axis.ticks.x = element_text(colour = "black"),axis.ticks.y = element_text(colour = "black"),
+        axis.ticks.x = element_line(colour = "black"), axis.ticks.y = element_line(colour = "black"),
         axis.ticks.length=unit(-0.15, "cm"),element_line(colour = "black", linewidth=.5),
         panel.border = element_rect(colour = "black", fill=NA, linewidth=.5),
         legend.title=element_blank(),
@@ -177,12 +179,12 @@ forage_TL123 <- read.csv('data/palila_prey/palila_prey.csv')
 data2 <- forage_TL123
 data2List = split(data2, data2$ucdavis_id) #split raw data up based on lab specimen ID
 
-#### build functions to generate 100 estimates of each AA for each sample in the forage data
-#### use these to generate 100 estimates of each AA d15N value 
+#### build functions to generate X estimates of each AA for each sample in the forage data
+#### use these to generate X estimates of each AA d15N value 
 #### at each trophic level
 
 # set # of random variates drawn from norm distrib, outside of the function
-num_draws = 100
+num_draws = 37
 
 # Alanine, first AA function, 1 of 11
 GetAla <- function(anID){
@@ -193,30 +195,144 @@ Ala = lapply(data2List, GetAla)        # apply function to the first AA using da
 Ala = reshape2::melt(Ala)             # melt the df
 Ala$L1 <- as.factor(Ala$L1)
 setnames(Ala, old=c("L1","value"), new=c("ucdavis_id", "Ala"))    # replace column header names 
-
+Ala <- Ala[, c(2, 1)]    # reorder colummns
 
 # AA function 2 of 11, Asp
 GetAsp <- function(anID){
   asp.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "asp")) , sd = as.numeric(subset(anID, value == "sd", select = "asp"))) # asparagine
-  return(ala.est)
+  return(asp.est)
 }
 Asp = lapply(data2List, GetAsp)
 Asp = reshape2::melt(Asp)
 Asp$L1 <- as.factor(Asp$L1)
 setnames(Asp, old=c("L1","value"), new=c("ucdavis_id", "Asp"))
 
+# AA function 3 of 11, Glu
+GetGlu <- function(anID){
+  glu.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamine
+  return(glu.est)
+}
+Glu = lapply(data2List, GetGlu)
+Glu = reshape2::melt(Glu)
+Glu$L1 <- as.factor(Glu$L1)
+setnames(Glu, old=c("L1","value"), new=c("ucdavis_id", "Glu"))
 
+# AA function 4 of 11, Gly
+GetGly <- function(anID){
+  gly.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "gly")) , sd = as.numeric(subset(anID, value == "sd", select = "gly"))) # glycine
+  return(gly.est)
+}
+Gly = lapply(data2List, GetGly)
+Gly = reshape2::melt(Gly)
+Gly$L1 <- as.factor(Gly$L1)
+setnames(Gly, old=c("L1","value"), new=c("ucdavis_id", "Gly"))
 
+# AA function 5 of 11, Lys
+GetLys <- function(anID){
+  lys.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "lys")) , sd = as.numeric(subset(anID, value == "sd", select = "lys"))) # Lysine
+  return(lys.est)
+}
+Lys = lapply(data2List, GetLys)
+Lys = reshape2::melt(Lys)
+Lys$L1 <- as.factor(Lys$L1)
+setnames(Lys, old=c("L1","value"), new=c("ucdavis_id", "Lys"))
 
+# AA function 6 of 11, Leu
+GetLeu <- function(anID){
+  leu.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "leu")) , sd = as.numeric(subset(anID, value == "sd", select = "leu"))) # Leucine
+  return(leu.est)
+}
+Leu = lapply(data2List, GetLeu)
+Leu = reshape2::melt(Leu)
+Leu$L1 <- as.factor(Leu$L1)
+setnames(Leu, old=c("L1","value"), new=c("ucdavis_id", "Leu"))
 
+# AA function 7 of 11, Phe
+GetPhe <- function(anID){
+  phe.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "phe")) , sd = as.numeric(subset(anID, value == "sd", select = "phe"))) # phenylalanine
+  return(phe.est)
+}
+Phe = lapply(data2List, GetPhe)
+Phe = reshape2::melt(Phe)
+Phe$L1 <- as.factor(Phe$L1)
+setnames(Phe, old=c("L1","value"), new=c("ucdavis_id", "Phe"))
 
-glu.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamine
-gly.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "gly")) , sd = as.numeric(subset(anID, value == "sd", select = "gly"))) # glycine
-lys.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "lys")) , sd = as.numeric(subset(anID, value == "sd", select = "lys"))) # lysine
-leu.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "leu")) , sd = as.numeric(subset(anID, value == "sd", select = "leu"))) # leucine
-phe.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "phe")) , sd = as.numeric(subset(anID, value == "sd", select = "phe"))) # phenylalanine
-pro.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "pro")) , sd = as.numeric(subset(anID, value == "sd", select = "pro"))) # proline
-val.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "val")) , sd = as.numeric(subset(anID, value == "sd", select = "val"))) # valine
-ser.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "ser")) , sd = as.numeric(subset(anID, value == "sd", select = "ser"))) # serine
-thr.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "thr")) , sd = as.numeric(subset(anID, value == "sd", select = "thr"))) # threonine 
+# AA function 8 of 11, Pro
+GetPro <- function(anID){
+  pro.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "pro")) , sd = as.numeric(subset(anID, value == "sd", select = "pro"))) # proline
+  return(pro.est)
+}
+Pro = lapply(data2List, GetPro)
+Pro = reshape2::melt(Pro)
+Pro$L1 <- as.factor(Pro$L1)
+setnames(Pro, old=c("L1","value"), new=c("ucdavis_id", "Pro"))
+
+# AA function 9 of 11, Val
+GetVal <- function(anID){
+  val.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "val")) , sd = as.numeric(subset(anID, value == "sd", select = "val"))) # valine
+  return(val.est)
+}
+Val = lapply(data2List, GetVal)
+Val = reshape2::melt(Val)
+Val$L1 <- as.factor(Val$L1)
+setnames(Val, old=c("L1","value"), new=c("ucdavis_id", "Val"))
+
+# AA function 10 of 11, Ser
+GetSer <- function(anID){
+  ser.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "ser")) , sd = as.numeric(subset(anID, value == "sd", select = "ser"))) # serine
+  return(ser.est)
+}
+Ser = lapply(data2List, GetSer)
+Ser = reshape2::melt(Ser)
+Ser$L1 <- as.factor(Ser$L1)
+setnames(Ser, old=c("L1","value"), new=c("ucdavis_id", "Ser"))
+
+# AA function 11 of 11, Thr
+GetThr <- function(anID){
+  thr.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "thr")) , sd = as.numeric(subset(anID, value == "sd", select = "thr"))) # threonine
+  return(thr.est)
+}
+Thr = lapply(data2List, GetThr)
+Thr = reshape2::melt(Thr)
+Thr$L1 <- as.factor(Thr$L1)
+setnames(Thr, old=c("L1","value"), new=c("ucdavis_id", "Thr"))
+
+# bind all the AA random deviates into one single frame
+AA_tot <- cbind(Ala, Asp$Asp,	Glu$Glu, Gly$Gly, Lys$Lys, Leu$Leu,	Phe$Phe, Pro$Pro,	Val$Val, Ser$Ser,	Thr$Thr)
+names(AA_tot)    # check on col names, prob should rename
+setnames(AA_tot, old=c("Asp$Asp", "Glu$Glu", "Gly$Gly", "Lys$Lys", "Leu$Leu",	"Phe$Phe", "Pro$Pro",	"Val$Val", "Ser$Ser",	"Thr$Thr"), 
+         new=c("Asp", "Glu", "Gly", "Lys", "Leu",	"Phe", "Pro",	"Val", "Ser",	"Thr"))  
+# reshape df from wide to long using gather()
+AA_gather <- gather(AA_tot, key="AA", value="value", 2:12)
+# bring in metadata from original data sheet
+# remove the duplicate rows for SD
+data2<-subset(data2, value == "ave")
+names(data2)    # check on col names for orderly cleaning of final df
+# remove unnecessary cols for the AAs, etc
+data2_sm<-subset(data2, select = -c(photo, value, ala, asp, glu, gly, lys, leu, phe, pro, val, ser, thr))
+# finally here... so good
+AA_total<-merge(data2_sm,AA_gather, by="ucdavis_id")
+
+#### make a box plot to compare results of AAs across trophic levels
+ggplot(AA_total, aes(x = TL, y = value, fill = AA)) +
+  themeKV +
+  theme(strip.background = element_blank(),
+        axis.line = element_blank(),
+        panel.border = element_rect(colour = "black", linewidth = .5),
+        axis.ticks.length = unit(-.15, "cm"), 
+      #  axis.text.x = element_blank(),
+      #  axis.title.x = element_blank(),
+      #  axis.ticks.x = element_blank(),
+        axis.title.y = element_text(margin = margin(-2,-2,-2,-2)),
+        axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))
+        ) +
+  geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
+  geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25) +
+  scale_y_continuous(breaks= pretty_breaks()) +
+  scale_fill_brewer(palette = "Spectral")+
+  # scale_fill_manual(values=c("#e4eb9a", "#99cc99")) +
+  # scale_y_continuous(breaks = c(-30, -25, -20, -15, -10, -5, 0, 5, 10)) +
+  ylab("d15N (%)") + # this needs to read δ15N (‰) but it wont print to PDF
+  facet_wrap(~AA, ncol=3, scales = "free_y")
+
 
