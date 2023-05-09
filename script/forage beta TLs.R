@@ -229,7 +229,7 @@ ggplot(Beta_total, aes(x = photo, y = value)) +
         axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))) +
   geom_point(alpha=0.02, color="black", position="jitter", shape = 16, size = 3) +  
   geom_boxplot(alpha=0, colour = "black", linewidth = 0.25) +
-  scale_y_continuous(limits = c(-28,10),
+  scale_y_continuous(limits = c(-29,10),
                      breaks = c(-30, -25, -20, -15, -10, -5, 0, 5, 10)) +
   ylab("β (‰)") +
   facet_wrap(~beta, ncol=6)
