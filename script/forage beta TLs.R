@@ -47,7 +47,7 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen
 #### for each of the 6 formulations of Beta in Besser et al 2022, Figure 5 (DOI: 10.1111/1365-2745.13853)
 
 # set # of random variates drawn from norm distrib, outside of the function to avoid repetition
-num_draws = 100
+num_draws = 37
 
 # start with Beta formulation #1 
 GetBeta1 <- function(anID){
@@ -147,22 +147,15 @@ Beta_total<-merge(data_sm,Beta_gather, by="ucdavis_id")
 # just completely imitating the form of Fig 5 from Besser et al 2022
 ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   themeKV +
-  theme(strip.background = element_blank(),
-        axis.line = element_blank(),
-        panel.border = element_rect(colour = "black", linewidth = .5),
-        axis.ticks.length = unit(-.15, "cm"), 
-        axis.text.x = element_blank(),
+  theme(axis.text.x = element_blank(),
         axis.title.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.y = element_text(margin = margin(-2,-2,-2,-2)),
-        axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))) +
+        axis.ticks.x = element_blank()) +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
   geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25) +
-  scale_fill_manual(values=c("#e4eb9a", "#99cc99")) +
-  scale_y_continuous(breaks = c(-30, -25, -20, -15, -10, -5, 0, 5, 10)) +
+  scale_fill_manual(values=c("#5e4fa2", "#66c2a5")) +
+  scale_y_continuous(breaks = seq(-30, 10, by = 5)) +
   ylab("Beta (d15N %)") + # this needs to read β(δ15N ‰) but it wont print to PDF
   facet_wrap(~beta, ncol=6)
-
 
 
 
@@ -327,6 +320,8 @@ ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
 
 
 
+
+
 #### Make a final analysis of the AA data to calculate TEF
 #### Perform a random draw from the AA param data, calculate TEF for TL=2, Tl=3
 #### Then make a raincloud style plot of the TEF distribs at each TL
@@ -402,7 +397,7 @@ mean(TEF_gather$value) # 7.036752
 ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
   theme(legend.position = "none") + #ggdist is already grouping the TL categories
-  stat_dots(quantiles = 80, side = "bottom", color = NA, alpha = 0.5) + # quantiles controls side of dots
+  stat_dots(quantiles = 80, side = "bottom", color = NA, alpha = 0.35) + # quantiles controls side of dots
   stat_halfeye(side = "top", alpha = 0.75) + 
   scale_fill_manual(values = c("#990033","#3288bd")) +
   scale_x_continuous(breaks = seq(2, 12, by = 2)) +
