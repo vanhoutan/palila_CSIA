@@ -14,7 +14,7 @@ library(ggthemes)     # helpful ggplot themes
 library(forcats)
 library(scales)
 library(RColorBrewer) # pretty colors
-
+library(ggdist)
 
 # Custom ggPlot theme
 themeKV <- theme_few()+
@@ -46,9 +46,8 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen
 #### use these to generate X estimates of Beta 
 #### for each of the 6 formulations of Beta in Besser et al 2022, Figure 5 (DOI: 10.1111/1365-2745.13853)
 
-
 # set # of random variates drawn from norm distrib, outside of the function to avoid repetition
-num_draws = 37
+num_draws = 100
 
 # start with Beta formulation #1 
 GetBeta1 <- function(anID){
@@ -98,6 +97,8 @@ Beta4 = lapply(dataList, GetBeta4)        # apply the 1st Beta calc function to 
 Beta4 = reshape2::melt(Beta4)             # melt the dataframe
 Beta4$L1 <- as.factor(Beta4$L1)                              
 setnames(Beta4, old=c("L1","value"), new=c("ucdavis_id", "Glu-Lys"))    # replace Beta value column header with Beta formula 
+# check the average value, evenly weighted between mamane and naio, should ~1.52
+mean(Beta4$`Glu-Lys`) # 1.499065
 
 # run Beta function 5/6
 GetBeta5 <- function(anID){
@@ -338,6 +339,8 @@ ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
 
 
 
+
+
 #### Make a final analysis of the AA data to calculate TEF
 #### Perform a random draw from the AA param data, calculate TEF for TL=2, Tl=3
 #### Then make a raincloud style plot of the TEF distribs at each TL
@@ -355,7 +358,9 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen
 # TEF is defined by Nielsen et al 2015 (https://doi.org/10.1007/s00442-015-3305-7)
 # set # of random variates drawn from norm distrib, outside of the function to avoid repetition
 num_draws = 100
-beta = 1.955
+beta = 1.9063 # this is AAtrp - AAsrc at TL=1, where we pair Glu and Lys
+# importantly, this is weighted 90% for mamane, and 10% for naio
+# as per palila foraging data observations
 
 # start with TEF at TL=2 
 GetTEF2 <- function(anID){
@@ -370,7 +375,7 @@ TEF2$L1 <- as.factor(TEF2$L1)
 setnames(TEF2, old=c("L1","value"), new=c("ucdavis_id", "TEF_TL2"))    # replace TEF value column header with TEF formulation 
 TEF2 <- TEF2[, c(2, 1)]    # reorder columns
 # check data, should average to ~ 6.4
-mean(TEF2$TEF_TL2)
+mean(TEF2$TEF_TL2) # 6.419575
 
 # repeat above but for TL=3 to calculate TEF3
 # subset SIL data for TL=3 
@@ -392,5 +397,51 @@ TEF3$L1 <- as.factor(TEF3$L1)
 setnames(TEF3, old=c("L1","value"), new=c("ucdavis_id", "TEF_TL3"))    # replace TEF value column header with TEF formulation 
 TEF3 <- TEF3[, c(2, 1)]    # reorder columns
 # check data, should average to ~ 7.6
-mean(TEF3$TEF_TL3)
+mean(TEF3$TEF_TL3) # 7.586594
+
+#### now bind all the TEF formulations into one single frame
+TEF_tot <- cbind(TEF2, TEF3$TEF_TL3)
+names(TEF_tot)    # check on col names, prob should rename
+setnames(TEF_tot, old=c("TEF_TL2", "TEF3$TEF_TL3"), 
+         new=c("TL2", "TL3"))   
+# reshape df from wide to long using gather()
+TEF_gather <- gather(TEF_tot, key="TEF", value="value", 2:3)
+# no need for metadata additions from original data
+# calculate global TEF from the palila forage data, should ~ 7.0
+mean(TEF_gather$value) # 7.036752
+
+
+#### make a raincloud style plot of the TEF values 
+#### across both trophic levels: TL=2, TL=3
+ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
+  themeKV +
+  stat_dots(quantiles = 80, side = "bottom", color = NA) +
+  stat_halfeye(side = "top") + 
+  #  scale_fill_brewer(palette = "Spectral") +
+  scale_x_continuous(breaks = seq(2, 12, by = 2)) +
+  xlab("TEF (d15N %)") +
+  ylab("trophic level")
+
+
+
+ggplot(TEF_gather, aes(value, fill = TEF)) +
+  themeKV +
+  theme(strip.background = element_blank(),
+        axis.line = element_blank(),
+        panel.border = element_rect(colour = "black", linewidth = .5),
+        axis.ticks.length = unit(-.15, "cm"), 
+        axis.title.y = element_text(margin = margin(-2,-2,-2,-2)),
+        axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))
+  ) +
+  # geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
+  # geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25) +
+  geom_density() +
+  scale_fill_brewer(palette = "Spectral") +
+  scale_x_continuous(breaks = seq(2, 12, by = 2)) +
+  xlab("TEF (d15N %)") +
+  ylab("trophic level")
+
+
+
+
 
