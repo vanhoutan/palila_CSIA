@@ -13,7 +13,7 @@ library(zoo)          # roll mean
 library(ggthemes)     # helpful ggplot themes
 library(forcats)
 library(scales)
-library(RColorBrewer) # prety colors
+library(RColorBrewer) # pretty colors
 
 
 # Custom ggPlot theme
@@ -29,10 +29,10 @@ themeKV <- theme_few()+
         strip.text=element_text(hjust=0))
 
 
-#### Determine which Trophic and Source AA combinations aer suitable 
+#### Determine which trophic and source AA combinations are suitable 
 #### from the CSIA-AA d15N data in this terrestrial setting
 
-# read in palila prey data, output from UCDavis SIL
+# read in palila prey data, output from UC Davis SIL
 # setwd("/Users/kylevanhoutan/palila_CSIA/")
 forage_raw <- read.csv('data/palila_prey/palila_prey.csv')
 # subset for just producer data (what's needed to calculate β)
@@ -47,8 +47,7 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen
 #### for each of the 6 formulations of Beta in Besser et al 2022, Figure 5 (DOI: 10.1111/1365-2745.13853)
 
 
-# set # of random variates drawn from norm distrib, outside of the function
-# to avoid repetition
+# set # of random variates drawn from norm distrib, outside of the function to avoid repetition
 num_draws = 37
 
 # start with Beta formulation #1 
@@ -62,7 +61,7 @@ Beta1 = lapply(dataList, GetBeta1)        # apply the 1st Beta calc function to 
 Beta1 = reshape2::melt(Beta1)             # melt the dataframe
 Beta1$L1 <- as.factor(Beta1$L1)                              
 setnames(Beta1, old=c("L1","value"), new=c("ucdavis_id", "Glu-Phe"))    # replace Beta value column header with Beta formula 
-Beta1 <- Beta1[, c(2, 1)]    # reorder colummns
+Beta1 <- Beta1[, c(2, 1)]    # reorder columns
 
 # run Beta function 2/6
 GetBeta2 <- function(anID){
@@ -165,8 +164,9 @@ ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
 
 
 
+
 #### Do a new analysis to pull random variates from AA distributions
-#### trying to determine which are most obvious trophic and source AAs
+#### to display and help determine which are intuitive trophic and source AAs
 #### which will lead to calculating TEF (i.e., TDF)
 #### group results by TL (all results from TL=1, TL=2...)
 #### make box plot, facet by AA 
@@ -195,7 +195,7 @@ Ala = lapply(data2List, GetAla)        # apply function to the first AA using da
 Ala = reshape2::melt(Ala)             # melt the df
 Ala$L1 <- as.factor(Ala$L1)
 setnames(Ala, old=c("L1","value"), new=c("ucdavis_id", "Ala"))    # replace column header names 
-Ala <- Ala[, c(2, 1)]    # reorder colummns
+Ala <- Ala[, c(2, 1)]    # reorder columns
 
 # AA function 2 of 11, Asp
 GetAsp <- function(anID){
@@ -297,7 +297,8 @@ Thr = reshape2::melt(Thr)
 Thr$L1 <- as.factor(Thr$L1)
 setnames(Thr, old=c("L1","value"), new=c("ucdavis_id", "Thr"))
 
-# bind all the AA random deviates into one single frame
+
+#### bind all the AA random deviates into one single frame
 AA_tot <- cbind(Ala, Asp$Asp,	Glu$Glu, Gly$Gly, Lys$Lys, Leu$Leu,	Phe$Phe, Pro$Pro,	Val$Val, Ser$Ser,	Thr$Thr)
 names(AA_tot)    # check on col names, prob should rename
 setnames(AA_tot, old=c("Asp$Asp", "Glu$Glu", "Gly$Gly", "Lys$Lys", "Leu$Leu",	"Phe$Phe", "Pro$Pro",	"Val$Val", "Ser$Ser",	"Thr$Thr"), 
@@ -314,7 +315,7 @@ data2_sm<-subset(data2, select = -c(photo, value, ala, asp, glu, gly, lys, leu, 
 AA_total<-merge(data2_sm,AA_gather, by="ucdavis_id")
 
 #### make a box plot to compare results of AAs across trophic levels
-ggplot(AA_total, aes(x = TL, y = value, fill = AA)) +
+ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
   themeKV +
   theme(strip.background = element_blank(),
         axis.line = element_blank(),
@@ -327,7 +328,7 @@ ggplot(AA_total, aes(x = TL, y = value, fill = AA)) +
         axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))
         ) +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
-  geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25) +
+  geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25) +
   scale_y_continuous(breaks= pretty_breaks()) +
   scale_fill_brewer(palette = "Spectral")+
   # scale_fill_manual(values=c("#e4eb9a", "#99cc99")) +
@@ -335,4 +336,61 @@ ggplot(AA_total, aes(x = TL, y = value, fill = AA)) +
   ylab("d15N (%)") + # this needs to read δ15N (‰) but it wont print to PDF
   facet_wrap(~AA, ncol=3, scales = "free_y")
 
+
+
+#### Make a final analysis of the AA data to calculate TEF
+#### Perform a random draw from the AA param data, calculate TEF for TL=2, Tl=3
+#### Then make a raincloud style plot of the TEF distribs at each TL
+
+# repeated from early line above just to make sure! 
+forage_raw <- read.csv('data/palila_prey/palila_prey.csv')
+# subset for just consumer TL=2 data to calculate TEF2
+forage_TL2 <- subset(forage_raw, TL == 2)
+# Generate random variates given the norm distrib params (ave, sd) given in the lab results
+data <- forage_TL2
+dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen ID
+
+# build functions to generate X estimates of each AA for each sample
+# use these to generate X estimates of TEF, by first estimating TEF at TL=2 and TL=3 
+# TEF is defined by Nielsen et al 2015 (https://doi.org/10.1007/s00442-015-3305-7)
+# set # of random variates drawn from norm distrib, outside of the function to avoid repetition
+num_draws = 100
+beta = 1.955
+
+# start with TEF at TL=2 
+GetTEF2 <- function(anID){
+  glu.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) 
+  lys.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "lys")) , sd = as.numeric(subset(anID, value == "sd", select = "lys")))
+  TEF2 <- (glu.est) - (lys.est) - beta 
+  return(TEF2)
+}
+TEF2 = lapply(dataList, GetTEF2)      # apply the function to each specimen
+TEF2 = reshape2::melt(TEF2)           # melt the df
+TEF2$L1 <- as.factor(TEF2$L1)                              
+setnames(TEF2, old=c("L1","value"), new=c("ucdavis_id", "TEF_TL2"))    # replace TEF value column header with TEF formulation 
+TEF2 <- TEF2[, c(2, 1)]    # reorder columns
+# check data, should average to ~ 6.4
+mean(TEF2$TEF_TL2)
+
+# repeat above but for TL=3 to calculate TEF3
+# subset SIL data for TL=3 
+forage_TL3 <- subset(forage_raw, TL == 3)
+# Generate random variates given the norm distrib params (ave, sd) given in the lab results
+data <- forage_TL3
+dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen ID
+
+# then get TEF at TL=3 
+GetTEF3 <- function(anID){
+  glu.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) 
+  lys.est<- rnorm(num_draws, mean = as.numeric(subset(anID, value == "ave", select = "lys")) , sd = as.numeric(subset(anID, value == "sd", select = "lys")))
+  TEF3 <- (glu.est) - (lys.est) - beta 
+  return(TEF3)
+}
+TEF3 = lapply(dataList, GetTEF3)      # apply the function to each specimen
+TEF3 = reshape2::melt(TEF3)           # melt the df
+TEF3$L1 <- as.factor(TEF3$L1)                              
+setnames(TEF3, old=c("L1","value"), new=c("ucdavis_id", "TEF_TL3"))    # replace TEF value column header with TEF formulation 
+TEF3 <- TEF3[, c(2, 1)]    # reorder columns
+# check data, should average to ~ 7.6
+mean(TEF3$TEF_TL3)
 
