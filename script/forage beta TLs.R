@@ -317,27 +317,13 @@ AA_total<-merge(data2_sm,AA_gather, by="ucdavis_id")
 
 #### make a box plot to compare results of AAs across trophic levels
 ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
-  themeKV +
-  theme(strip.background = element_blank(),
-        axis.line = element_blank(),
-        panel.border = element_rect(colour = "black", linewidth = .5),
-        axis.ticks.length = unit(-.15, "cm"), 
-      #  axis.text.x = element_blank(),
-      #  axis.title.x = element_blank(),
-      #  axis.ticks.x = element_blank(),
-        axis.title.y = element_text(margin = margin(-2,-2,-2,-2)),
-        axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))
-        ) +
+  themeKV + theme(legend.position = "none") +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
   geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25) +
   scale_y_continuous(breaks= pretty_breaks()) +
   scale_fill_brewer(palette = "Spectral")+
-  # scale_fill_manual(values=c("#e4eb9a", "#99cc99")) +
-  # scale_y_continuous(breaks = c(-30, -25, -20, -15, -10, -5, 0, 5, 10)) +
   ylab("d15N (%)") + # this needs to read δ15N (‰) but it wont print to PDF
-  facet_wrap(~AA, ncol=3, scales = "free_y")
-
-
+  facet_wrap(~AA, ncol=4, scales = "free_y")
 
 
 
@@ -414,34 +400,14 @@ mean(TEF_gather$value) # 7.036752
 #### make a raincloud style plot of the TEF values 
 #### across both trophic levels: TL=2, TL=3
 ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
-  themeKV +
-  stat_dots(quantiles = 80, side = "bottom", color = NA) +
-  stat_halfeye(side = "top") + 
-  #  scale_fill_brewer(palette = "Spectral") +
+  themeKV + 
+  theme(legend.position = "none") + #ggdist is already grouping the TL categories
+  stat_dots(quantiles = 80, side = "bottom", color = NA, alpha = 0.5) + # quantiles controls side of dots
+  stat_halfeye(side = "top", alpha = 0.75) + 
+  scale_fill_manual(values = c("#990033","#3288bd")) +
   scale_x_continuous(breaks = seq(2, 12, by = 2)) +
   xlab("TEF (d15N %)") +
   ylab("trophic level")
-
-
-
-ggplot(TEF_gather, aes(value, fill = TEF)) +
-  themeKV +
-  theme(strip.background = element_blank(),
-        axis.line = element_blank(),
-        panel.border = element_rect(colour = "black", linewidth = .5),
-        axis.ticks.length = unit(-.15, "cm"), 
-        axis.title.y = element_text(margin = margin(-2,-2,-2,-2)),
-        axis.text.y = element_text(hjust = 1, margin = margin(10, 10, 10, 10))
-  ) +
-  # geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
-  # geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25) +
-  geom_density() +
-  scale_fill_brewer(palette = "Spectral") +
-  scale_x_continuous(breaks = seq(2, 12, by = 2)) +
-  xlab("TEF (d15N %)") +
-  ylab("trophic level")
-
-
 
 
 
