@@ -151,7 +151,7 @@ ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
         axis.title.x = element_blank(),
         axis.ticks.x = element_blank()) +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
-  geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25) +
+  geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25, outlier.color = NA) +
   scale_fill_manual(values=c("#5e4fa2", "#66c2a5")) +
   scale_y_continuous(breaks = seq(-30, 10, by = 5)) +
   ylab("Beta (d15N %)") + # this needs to read β(δ15N ‰) but it wont print to PDF
@@ -312,7 +312,7 @@ AA_total<-merge(data2_sm,AA_gather, by="ucdavis_id")
 ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
   themeKV + theme(legend.position = "none") +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
-  geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25) +
+  geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25, outlier.color = NA) +
   scale_y_continuous(breaks= pretty_breaks()) +
   scale_fill_brewer(palette = "Spectral")+
   ylab("d15N (%)") + # this needs to read δ15N (‰) but it wont print to PDF
@@ -397,8 +397,8 @@ mean(TEF_gather$value) # 7.036752
 ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
   theme(legend.position = "none") + #ggdist is already grouping the TL categories
-  stat_dots(quantiles = 80, side = "bottom", color = NA, alpha = 0.35) + # quantiles controls side of dots
-  stat_halfeye(side = "top", alpha = 0.75) + 
+  stat_dots(quantiles = 90, side = "bottom", color = NA, alpha = 0.35, height = 0.65) + # quantiles controls side of dots
+  stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 0.9) + # adjust regulates bandwidth/smoothness
   scale_fill_manual(values = c("#990033","#3288bd")) +
   scale_x_continuous(breaks = seq(2, 12, by = 2)) +
   xlab("TEF (d15N %)") +
