@@ -15,6 +15,11 @@ library(forcats)
 library(scales)
 library(RColorBrewer) # pretty colors
 library(ggdist)
+library(colorspace)
+library(ragg)
+library(grid)
+library(png)
+library(patchwork) 
 
 # Custom ggPlot theme
 themeKV <- theme_few()+
@@ -392,23 +397,29 @@ TEF_gather <- gather(TEF_tot, key="TEF", value="value", 2:3)
 mean(TEF_gather$value) # 7.036752
 
 
-library(colorspace)
-library(ragg)
 #### make a raincloud style plot of the TEF values 
 #### across both trophic levels: TL=2, TL=3
+
+# read in the silhouettes for the plot
+sil1 <- readPNG("/Users/kylevanhoutan/palila_CSIA/images/larvae.png", native = TRUE)
+sil2 <- readPNG("/Users/kylevanhoutan/palila_CSIA/images/spider.png", native = TRUE)
+img1 <- grid::rasterGrob(sil1, interpolate = TRUE)
+img2 <- grid::rasterGrob(sil2, interpolate = TRUE)
+#make the plot
 ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
   theme(legend.position = "none") + #ggdist is already grouping the TL categories
-  stat_dots(quantiles = 90, side = "bottom", color = NA, alpha = 0.35, height = 0.65) + # quantiles controls side of dots
-  stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 0.9) + # adjust regulates bandwidth/smoothness
-  scale_fill_manual(values = c("#990033","#3288bd")) +
-  scale_color_manual(values = c("#990033","#3288bd")) +
+  stat_dots(side = "bottom", color = NA, alpha = 1, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls side of dots
+  stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 1) + # adjust regulates bandwidth/smoothness
+  scale_fill_manual(values = c("#3288bd", "#990033")) +
+  scale_color_manual(values = c("#3288bd", "#990033")) +
   scale_x_continuous(breaks = seq(2, 12, by = 1)) +
   xlab("TEF (d15N %)") +
   ylab("trophic level") +
   stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5,
-               fun = "median", aes(label = round(..x.., 2),
-               color = TEF , color = after_scale(darken(color, 0.5))
-               ))
+               fun = "median", aes(label = round(after_stat(x), 2),
+               color = TEF , color = after_scale(darken(color, 0.5)))) +
+  inset_element(p = img1, left = 0.075, bottom = 0.3, right = 0.225, top = 0.4) + # insert the silhouettes
+  inset_element(p = img2, left = 0.05, bottom = 0.68, right = 0.25, top = 0.88)
 
 
