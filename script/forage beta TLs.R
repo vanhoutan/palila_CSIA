@@ -392,6 +392,8 @@ TEF_gather <- gather(TEF_tot, key="TEF", value="value", 2:3)
 mean(TEF_gather$value) # 7.036752
 
 
+library(colorspace)
+library(ragg)
 #### make a raincloud style plot of the TEF values 
 #### across both trophic levels: TL=2, TL=3
 ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
@@ -400,9 +402,13 @@ ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) +
   stat_dots(quantiles = 90, side = "bottom", color = NA, alpha = 0.35, height = 0.65) + # quantiles controls side of dots
   stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 0.9) + # adjust regulates bandwidth/smoothness
   scale_fill_manual(values = c("#990033","#3288bd")) +
-  scale_x_continuous(breaks = seq(2, 12, by = 2)) +
+  scale_color_manual(values = c("#990033","#3288bd")) +
+  scale_x_continuous(breaks = seq(2, 12, by = 1)) +
   xlab("TEF (d15N %)") +
-  ylab("trophic level")
-
+  ylab("trophic level") +
+  stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5,
+               fun = "median", aes(label = round(..x.., 2),
+               color = TEF , color = after_scale(darken(color, 0.5))
+               ))
 
 
