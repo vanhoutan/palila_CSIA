@@ -147,9 +147,9 @@ data_sm<-subset(data, select = -c(value, ala, asp, glu, gly, lys, leu, phe, pro,
 # finally here... so good
 Beta_total<-merge(data_sm,Beta_gather, by="ucdavis_id")
 
-
 #### make a box plot to compare results of different Beta formulations
-# just completely imitating the form of Fig 5 from Besser et al 2022
+# similar form to Fig 5 from Besser et al 2022
+# but scale free y axes to emphasize whatever structure is there
 ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   themeKV +
   theme(axis.text.x = element_blank(),
@@ -158,9 +158,9 @@ ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
   geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25, outlier.color = NA) +
   scale_fill_manual(values=c("#5e4fa2", "#66c2a5")) +
-  scale_y_continuous(breaks = seq(-30, 10, by = 5)) +
+#  scale_y_continuous(breaks = seq(-30, 10, by = 5)) +
   ylab("Beta (d15N %)") + # this needs to read β(δ15N ‰) but it wont print to PDF
-  facet_wrap(~beta, ncol=6)
+  facet_wrap(~beta, ncol=6, scales = "free_y")
 
 
 
@@ -318,7 +318,7 @@ ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
   themeKV + theme(legend.position = "none") +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
   geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25, outlier.color = NA) +
-  scale_y_continuous(breaks= pretty_breaks()) +
+#  scale_y_continuous(breaks= pretty_breaks()) +
   scale_fill_brewer(palette = "Spectral")+
   ylab("d15N (%)") + # this needs to read δ15N (‰) but it wont print to PDF
   facet_wrap(~AA, ncol=4, scales = "free_y")
@@ -409,7 +409,7 @@ img2 <- grid::rasterGrob(sil2, interpolate = TRUE)
 ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
   theme(legend.position = "none") + #ggdist is already grouping the TL categories
-  stat_dots(side = "bottom", color = NA, alpha = 1, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls side of dots
+  stat_dots(quantiles = 200, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls side of dots
   stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 1) + # adjust regulates bandwidth/smoothness
   scale_fill_manual(values = c("#3288bd", "#990033")) +
   scale_color_manual(values = c("#3288bd", "#990033")) +
@@ -419,7 +419,7 @@ ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) +
   stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5,
                fun = "median", aes(label = round(after_stat(x), 2),
                color = TEF , color = after_scale(darken(color, 0.5)))) +
-  inset_element(p = img1, left = 0.075, bottom = 0.3, right = 0.225, top = 0.4) + # insert the silhouettes
+  inset_element(p = img1, left = 0.075, bottom = 0.3, right = 0.21, top = 0.4) + # insert the silhouettes
   inset_element(p = img2, left = 0.05, bottom = 0.68, right = 0.25, top = 0.88)
 
 
