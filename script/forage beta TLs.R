@@ -421,5 +421,3 @@ ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) +
                color = TEF , color = after_scale(darken(color, 0.5)))) +
   inset_element(p = img1, left = 0.075, bottom = 0.3, right = 0.21, top = 0.4) + # insert the silhouettes
   inset_element(p = img2, left = 0.05, bottom = 0.68, right = 0.25, top = 0.88)
-
-
