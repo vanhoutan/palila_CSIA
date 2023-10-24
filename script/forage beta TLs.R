@@ -31,7 +31,7 @@ themeKV <- theme_few()+
         axis.ticks.length=unit(-0.15, "cm"),element_line(colour = "black", linewidth=.5),
         panel.border = element_rect(colour = "black", fill=NA, linewidth=.5),
         legend.title=element_blank(),
-        strip.text=element_text(hjust=0))
+        strip.text=element_text(hjust=0, size=8))
 
 
 #### Determine which trophic and source AA combinations are suitable 
@@ -150,17 +150,23 @@ Beta_total<-merge(data_sm,Beta_gather, by="ucdavis_id")
 #### make a box plot to compare results of different Beta formulations
 # similar form to Fig 5 from Besser et al 2022
 # but scale free y axes to emphasize whatever structure is there
-ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
+p1 <- ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   themeKV +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank(),
-        axis.ticks.x = element_blank()) +
+        legend.position="bottom",
+        axis.text.y = element_text(size = 7, margin = margin(c(1, 0.1), unit = "cm")),
+        axis.title.y = element_text(size = 10),
+        legend.key.height = unit(0.5, 'cm'), # shrink the native height of legend
+        legend.text = element_text(size=7), # reduce font size on legend
+        panel.spacing.x = unit(0, "lines")) + # move panels closer horiz
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
-  geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25, outlier.color = NA) +
+  geom_boxplot(alpha=0.9, colour = "black", linewidth = 0.25, outlier.color = NA) +
   scale_fill_manual(values=c("#5e4fa2", "#66c2a5")) +
-#  scale_y_continuous(breaks = seq(-30, 10, by = 5)) +
+  scale_y_continuous(breaks= pretty_breaks()) +
   ylab("Beta (d15N %)") + # this needs to read β(δ15N ‰) but it wont print to PDF
   facet_wrap(~beta, ncol=6, scales = "free_y")
+  #facet_wrap(~beta, ncol=6)
 
 
 
@@ -314,16 +320,20 @@ data2_sm<-subset(data2, select = -c(photo, value, ala, asp, glu, gly, lys, leu, 
 AA_total<-merge(data2_sm,AA_gather, by="ucdavis_id")
 
 #### make a box plot to compare results of AAs across trophic levels
-ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
-  themeKV + theme(legend.position = "none") +
+p2 <- ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
+  themeKV + 
+  theme(legend.position = "none",
+        axis.text.x = element_text(size = 8),
+        axis.title.x = element_text(size = 10),
+        axis.text.y = element_text(size = 8),
+        axis.title.y = element_text(size = 10),) + 
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
-  geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25, outlier.color = NA) +
-#  scale_y_continuous(breaks= pretty_breaks()) +
+  geom_boxplot(alpha=0.75, colour = "black", linewidth = 0.25, outlier.color = NA) +
+  scale_y_continuous(breaks= pretty_breaks()) +
   scale_fill_brewer(palette = "Spectral")+
   ylab("d15N (%)") + # this needs to read δ15N (‰) but it wont print to PDF
-  facet_wrap(~AA, ncol=4, scales = "free_y")
-
-
+  facet_wrap(~AA, ncol=6, scales = "free_y")
+  # facet_wrap(~AA, ncol=6)
 
 
 
@@ -405,19 +415,35 @@ sil1 <- readPNG("/Users/kylevanhoutan/palila_CSIA/images/larvae.png", native = T
 sil2 <- readPNG("/Users/kylevanhoutan/palila_CSIA/images/spider.png", native = TRUE)
 img1 <- grid::rasterGrob(sil1, interpolate = TRUE)
 img2 <- grid::rasterGrob(sil2, interpolate = TRUE)
+
 #make the plot
-ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
+p3 <- ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
-  theme(legend.position = "none") + #ggdist is already grouping the TL categories
-  stat_dots(quantiles = 200, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls side of dots
+  theme(legend.position = "none", #ggdist is already grouping the TL categories
+        axis.text.x = element_text(size = 8),
+        axis.title.x = element_text(size = 10),
+        axis.text.y = element_text(size = 8),
+        axis.title.y = element_text(size = 10),) + 
+  stat_dots(quantiles = 100, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls size of dots
   stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 1) + # adjust regulates bandwidth/smoothness
   scale_fill_manual(values = c("#3288bd", "#990033")) +
   scale_color_manual(values = c("#3288bd", "#990033")) +
   scale_x_continuous(breaks = seq(2, 12, by = 1)) +
   xlab("TEF (d15N %)") +
   ylab("trophic level") +
-  stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5,
+  stat_summary(geom = "text", fontface = "bold", size = 4, vjust = -1.5,
                fun = "median", aes(label = round(after_stat(x), 2),
                color = TEF , color = after_scale(darken(color, 0.5)))) +
   inset_element(p = img1, left = 0.075, bottom = 0.3, right = 0.21, top = 0.4) + # insert the silhouettes
   inset_element(p = img2, left = 0.05, bottom = 0.68, right = 0.25, top = 0.88)
+
+
+layout <- "
+AAAAAAA
+BBBBBCC"
+p2 + p1 + p3 +
+  plot_layout(design = layout) +
+  plot_annotation(tag_levels = 'a') # add panel labels a, b, c... etc
+
+
+# END

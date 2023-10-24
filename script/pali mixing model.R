@@ -58,10 +58,10 @@ str(mix)
   #construct informative prior from stomach_proportional_plot_apr13.xlsx
 
              # "ARTHO"  "CYDIA"  "FOLCAT" "MAMANE" "NAIO"   "SPIDER"
-  TP_prior <- c(1,      10,        8,         74,      5,      2)
+TP_prior <- c(1,      10,        8,         74,      5,      2)
   
                # "CYDIA_ARTHO_FOLCAT" "MAMANE_NAIO" "SPIDER" 
- TP_prior <- c(19,      82,        2     )
+TP_prior <- c(19,      82,        2     )
   
   
   # Generate alpha hyperparameters scaling sum(alpha)=n.sources
