@@ -163,7 +163,6 @@ ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   facet_wrap(~beta, ncol=6, scales = "free_y")
 
 
-
 #### Do a new analysis to pull random variates from AA distributions
 #### to display and help determine which are intuitive trophic and source AAs
 #### which will lead to calculating TEF (i.e., TDF)
@@ -325,8 +324,6 @@ ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
 
 
 
-
-
 #### Make a final analysis of the AA data to calculate TEF
 #### Perform a random draw from the AA param data, calculate TEF for TL=2, Tl=3
 #### Then make a raincloud style plot of the TEF distribs at each TL
@@ -343,10 +340,10 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen
 # use these to generate X estimates of TEF, by first estimating TEF at TL=2 and TL=3 
 # TEF is defined by Nielsen et al 2015 (https://doi.org/10.1007/s00442-015-3305-7)
 # set # of random variates drawn from norm distrib, outside of the function to avoid repetition
-num_draws = 100
-beta = 1.9063 # this is AAtrp - AAsrc at TL=1, where we pair Glu and Lys
-# importantly, this is weighted 90% for mamane, and 10% for naio
-# as per palila foraging data observations
+num_draws = 500
+beta = 1.5183 # this is AAtrp - AAsrc at TL=1, where we pair Glu and Lys
+# importantly, this value is unweighted between mamane and naio
+
 
 # start with TEF at TL=2 
 GetTEF2 <- function(anID){
@@ -360,8 +357,8 @@ TEF2 = reshape2::melt(TEF2)           # melt the df
 TEF2$L1 <- as.factor(TEF2$L1)                              
 setnames(TEF2, old=c("L1","value"), new=c("ucdavis_id", "TEF_TL2"))    # replace TEF value column header with TEF formulation 
 TEF2 <- TEF2[, c(2, 1)]    # reorder columns
-# check data, should average to ~ 6.4
-mean(TEF2$TEF_TL2) # 6.419575
+# check data, should average to ~ 6.85
+mean(TEF2$TEF_TL2) # 6.816975
 
 # repeat above but for TL=3 to calculate TEF3
 # subset SIL data for TL=3 
@@ -382,8 +379,8 @@ TEF3 = reshape2::melt(TEF3)           # melt the df
 TEF3$L1 <- as.factor(TEF3$L1)                              
 setnames(TEF3, old=c("L1","value"), new=c("ucdavis_id", "TEF_TL3"))    # replace TEF value column header with TEF formulation 
 TEF3 <- TEF3[, c(2, 1)]    # reorder columns
-# check data, should average to ~ 7.6
-mean(TEF3$TEF_TL3) # 7.586594
+# check data, should average to ~ 8.02
+mean(TEF3$TEF_TL3) # 8.024405
 
 #### now bind all the TEF formulations into one single frame
 TEF_tot <- cbind(TEF2, TEF3$TEF_TL3)
@@ -393,8 +390,8 @@ setnames(TEF_tot, old=c("TEF_TL2", "TEF3$TEF_TL3"),
 # reshape df from wide to long using gather()
 TEF_gather <- gather(TEF_tot, key="TEF", value="value", 2:3)
 # no need for metadata additions from original data
-# calculate global TEF from the palila forage data, should ~ 7.0
-mean(TEF_gather$value) # 7.036752
+# calculate global TEF from the palila forage data, should ~ 7.44
+mean(TEF_gather$value) # 7.42069
 
 
 #### make a raincloud style plot of the TEF values 
@@ -413,7 +410,7 @@ ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) +
   stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 1) + # adjust regulates bandwidth/smoothness
   scale_fill_manual(values = c("#3288bd", "#990033")) +
   scale_color_manual(values = c("#3288bd", "#990033")) +
-  scale_x_continuous(breaks = seq(2, 12, by = 1)) +
+  scale_x_continuous(limits = c(2,12), breaks = seq(2, 12, by = 1)) +
   xlab("TEF (d15N %)") +
   ylab("trophic level") +
   stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5,

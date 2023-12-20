@@ -69,11 +69,11 @@ GetTP <- function(anID){
 # Nielsen et al 2015 described multiple ways to derive TEF based on data
 # following guidance of both studies, we previously used b =   2.1, TEF = 5.9
   
-b =   1.9063 # see 'forage beta TLs.R' script for derivation
-TEF = 7.0793 # see 'forage beta TLs.R' script for derivation
+b =   1.5183 # see 'forage beta TLs.R' script for derivation
+TEF = 7.4354 # see 'forage beta TLs.R' script for derivation
 
 # num_of_draws = 100
-num_of_draws = 5000 ## upped the number of random variates generated
+num_of_draws = 1000 ## increasing variates increases figure PDF file size
   
 glx.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glx")) , sd = as.numeric(subset(anID, value == "sd", select = "glx"))) # glutamic acid
 #  pro.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "pro")) , sd = as.numeric(subset(anID, value == "sd", select = "pro"))) # proline
@@ -101,7 +101,7 @@ total<-merge(data,TPforID_all, by="ucdavis_id")
 rm(dataList,data,TPforID_all)
 
 # random sample by year to reduce multiple year bias
-total <- total %>% group_by(year) %>% dplyr::sample_n(1000) %>% ungroup()
+total <- total %>% group_by(year) %>% dplyr::sample_n(500) %>% ungroup()
 
 str(total)
 
@@ -178,9 +178,9 @@ null_df <- NULL                                                                 
   for( i in 1:1000){
   new_df <- ddply(total,.(year),function(x) x[sample(nrow(x),1),])                   # sample value from each available year
   tp_est <- loess(tp ~ year , new_df,span = 1, surface = "direct")                   # fit loess model through the series
-  tp_predict <- as.data.frame(predict(tp_est,data.frame(year = seq(1890, 2015,1))))  # predict for all years
+  tp_predict <- as.data.frame(predict(tp_est,data.frame(year = seq(1890, 2010,1))))  # predict for all years
   # fit loess through the data
-  round <- data.frame(tp_predict = as.vector(tp_predict), year = seq(1890, 2015,1) , sim_num = i )
+  round <- data.frame(tp_predict = as.vector(tp_predict), year = seq(1890, 2010,1) , sim_num = i )
   null_df <- rbind(null_df,round)
 }
 
@@ -189,7 +189,7 @@ colnames(null_df)[1] <- "prediction"
 # get quantiles from the resampled models
 null_df_quant <- null_df %>% 
   dplyr::group_by(year) %>% 
-  dplyr::summarise(upper = quantile(prediction,.025,na.rm = T),   # get 5%, 50%, 95% quantile
+  dplyr::summarise(upper = quantile(prediction,.025,na.rm = T),   # get 2.5%, 50%, 97.5% quantile
             median = quantile(prediction,.5,na.rm = T) ,
             lower =  quantile(prediction,.975,na.rm = T))
 
@@ -206,9 +206,9 @@ ggplot()+
   geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), color = "#c8be30", size = .1, alpha = 0.15)+
 #  geom_line(data = null_df_quant, aes(x=year,y = median), size = 1)+
   #geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
-  scale_x_continuous(expand = c(0,0), breaks =  c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000,2010))+
+  scale_x_continuous(expand = c(0,0), breaks =  c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000))+
   #scale_y_continuous(limits = c(1.75,2.45), breaks =  c(1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4))+
-  scale_y_continuous(limits = c(2,3), breaks =  c(2.0, 2.2, 2.4, 2.6, 2.8, 3))+
+  scale_y_continuous(limits = c(2,2.8), breaks =  c(2.0, 2.2, 2.4, 2.6, 2.8, 3))+
   labs(x=NULL)+
   labs(y="trophic position")+
   themeo
@@ -223,7 +223,7 @@ tp <- ggplot(null_df_quant)+
   #scale_y_continuous(limits = c(1,2))+
   #scale_x_date(expand = c(0,0), breaks =  c(as.Date(0)))+
   scale_x_date(expand = c(0,0))+
-  scale_y_continuous(limits = c(2,3), breaks =  c(2.0, 2.2, 2.4, 2.6, 2.8, 3))+
+  scale_y_continuous(expand = c(0,0))+
   labs(x=NULL)+
   themeo
 tp
@@ -233,7 +233,7 @@ ggplot(null_df_quant)+
   geom_ribbon( aes(x=year,ymin=lower,ymax=upper), size = .1, alpha = .5)+
   geom_line( aes(x=year,y = median), size = 1)+
   #geom_violin(data = total,aes(x=year, y= tp, group = year), width = 20)+
-  scale_y_continuous(limits = c(2,3), breaks =  c(2.0, 2.2, 2.4, 2.6, 2.8, 3))+
+  scale_y_continuous(limits = c(2,2.8), breaks =  c(2.0, 2.2, 2.4, 2.6, 2.8, 3))+
   scale_x_date(expand = c(0,0))+
   labs(x=NULL)+
   labs(y="trophic position")+
@@ -242,11 +242,11 @@ ggplot(null_df_quant)+
 # plotting the traverse that Palila takes across constant TL of prey items
 # could be interesting supplemental figure that shows 3 major forage item groups
 
-source_csv <- read.csv("data/mixing model/source_data.csv") # estimated prey item TL, dev in prey_TL.R saved for mixing model as .csv
+source_csv <- read.csv("data/mixing model/source_data3.csv") # estimated prey item TL, dev in prey_TL.R saved for mixing model as .csv
 source_csv_plot <- rbind(source_csv,source_csv)  
 source_csv_plot$year <- NULL
 source_csv_plot$year[1:(nrow(source_csv_plot)/2)] <- '1/1/1890'  %>% mdy()
-source_csv_plot$year[(nrow(source_csv_plot)/2 + 1):nrow(source_csv_plot)] <- '1/1/2015'  %>% mdy()
+source_csv_plot$year[(nrow(source_csv_plot)/2 + 1):nrow(source_csv_plot)] <- '1/1/2010'  %>% mdy()
 source_csv_plot$ymin <- source_csv_plot$MeanTL - source_csv_plot$SDTL*1.96 
 source_csv_plot$ymax <- source_csv_plot$MeanTL + source_csv_plot$SDTL*1.96 
 source_csv_plot$year <- as.Date(source_csv_plot$year)
@@ -263,7 +263,7 @@ tp+
   
 
 # Create time series of TP in all Palila through time for mixing model
-# Consider breaking up by sex later
+# Consider breaking up by sex, perhaps in a later study
  mix_csv <- null_df %>% 
   dplyr::group_by(year) %>% 
   dplyr::summarise(
@@ -271,9 +271,8 @@ tp+
     sd = sd(prediction),
     spp = "PALI")
 
-# write.csv(mix_csv,"data/mixing model/mixture_data.csv")
-#### paused this as was already created using revised derived TEF and b values
-# write.csv(mix_csv,"data/mixing model/mixture_data2.csv")
+# comment this out if already created using revised derived TEF and b values
+write.csv(mix_csv,"data/mixing model/mixture_data3.csv")
 
 #cleanup
 rm(new_df,null_df,i,tp_est, tp_predict,round,mix_csv, mod91, new_month,prediction, GetTP, source_csv_plot,source_csv)
