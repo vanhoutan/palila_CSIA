@@ -73,6 +73,8 @@ TP_prior <- c(18,      79,        3     )
   plot_prior(alpha.prior = TP_prior, source,
            plot_save_pdf=FALSE,
          plot_save_png=FALSE)
+
+  
   #write jags model
   model_filename <- "MixSIAR_model.txt"
 
