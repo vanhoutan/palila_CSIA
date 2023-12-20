@@ -10,6 +10,7 @@ library(tidyr)        # gathering and spreading
 library(lubridate)    # date handling
 library(zoo)          # roll mean
 library(pdp)          # partial dependency plot building
+library(scales)       # pretty breaks helps
 
 
 ####  Custom ggPlot theme
@@ -19,16 +20,15 @@ themeo <- ggplot2::theme_classic()+
         axis.text.x = element_text(margin = margin( 0.2, unit = "cm")),
         axis.text.y = element_text(margin = margin(c(1, 0.2), unit = "cm")),
         axis.ticks.length=unit(-0.1, "cm"),
-        panel.border = element_rect(colour = "black", fill=NA, size=.5), #element_rect is deprecated
-        # panel.border = linewidth(colour = "black", fill=NA, size=.5),
+        panel.border = element_rect(colour = "black", fill=NA, linewidth=.5), #element_rect is deprecated
         legend.title=element_blank(),
-        strip.text=element_text(hjust=0) )
+        strip.text=element_text(hjust=0))
 
 # read in and merge palila data
 # palila UC_davis and Kyle's ID cross reference table
 Palila_meta <- read.delim('data/palila_samples/palila_sample_metadata_MBA_UCDavis_IDs2.txt')
 # UC davis stable isotope data
-CSSIAPalila <- read.csv('data/palila_samples/Palila_CSSIA_Aug20.csv')
+CSSIAPalila <- read.csv('data/palila_samples/Palila_CSSIA_Dec20.csv')
 # location, individual, date, metadata
 addt_meta <- read.csv('data/palila_samples/Palila_specimens_feather_database2.csv')
 
@@ -65,37 +65,29 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on specimen ID
 #build function to generate 1000 TP estimates based on random draws from AA gaussian distributions
 GetTP <- function(anID){
   
-  ## Chikaraishi has the below constants for marine SIA studies
-  ## b = 8.4
-  ## TEF = 7.6
+# b is derived from Chikaraishi et al 2009, using difference between trp and src AAs in primary producers
+# Nielsen et al 2015 described multiple ways to derive TEF based on data
+# following guidance of both studies, we previously used b =   2.1, TEF = 5.9
   
-  # b is derived from Chikaraishi et al 2009, using difference between trp and src AAs in primary producers
-  # Nielsen et al 2015 described multiple ways to derive TEF based on data
-  # we followed the guidance of both studies
-  # b =   2.1
-  # TEF = 5.9
-  
-  b =   1.6   
-  TEF = 5.3
+b =   1.9063 # see 'forage beta TLs.R' script for derivation
+TEF = 7.0793 # see 'forage beta TLs.R' script for derivation
 
-  ## num_of_draws = 100
-   num_of_draws = 5000 ## upped the number of random variates generated
+# num_of_draws = 100
+num_of_draws = 5000 ## upped the number of random variates generated
   
-  ala.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ala")) , sd = as.numeric(subset(anID, value == "sd", select = "ala"))) # alanine
-  glu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamic acid
-  pro.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "pro")) , sd = as.numeric(subset(anID, value == "sd", select = "pro"))) # proline
-  
-  val.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "val")) , sd = as.numeric(subset(anID, value == "sd", select = "val"))) # valine
-  leu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "leu")) , sd = as.numeric(subset(anID, value == "sd", select = "leu"))) # leucine
-  
-  thr.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "thr")) , sd = as.numeric(subset(anID, value == "sd", select = "thr"))) # threonine
-  ser.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ser")) , sd = as.numeric(subset(anID, value == "sd", select = "ser"))) # serine
-  phe.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "phe")) , sd = as.numeric(subset(anID, value == "sd", select = "phe"))) # phenylalanine
+glx.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glx")) , sd = as.numeric(subset(anID, value == "sd", select = "glx"))) # glutamic acid
+#  pro.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "pro")) , sd = as.numeric(subset(anID, value == "sd", select = "pro"))) # proline
+#  ala.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ala")) , sd = as.numeric(subset(anID, value == "sd", select = "ala"))) # alanine  
+#  val.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "val")) , sd = as.numeric(subset(anID, value == "sd", select = "val"))) # valine
+
+lys.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "lys")) , sd = as.numeric(subset(anID, value == "sd", select = "lys"))) # lysine
+#  thr.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "thr")) , sd = as.numeric(subset(anID, value == "sd", select = "thr"))) # threonine
+#  ser.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ser")) , sd = as.numeric(subset(anID, value == "sd", select = "ser"))) # serine
+#  phe.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "phe")) , sd = as.numeric(subset(anID, value == "sd", select = "phe"))) # phenylalanine
  
 #  TPforID <- (((((glu.est)/1)) - ((thr.est+ser.est+phe.est)/3) - b)/TEF ) + 1  # function to estimate TP via source and trophic AA with constants 
-  TPforID <- (((((glu.est)/1)) - ((thr.est+ser.est+phe.est)/3) - b)/TEF ) + 1  # function to estimate TP via source and trophic AA with constants 
-  
-  return(TPforID)
+TPforID <- ((glx.est - (lys.est - b))/TEF) + 1  # function to estimate TP via source and trophic AA with constants 
+return(TPforID)
 }
 
 TPforID_all = lapply(dataList, GetTP )          # apply that function to each specimen
@@ -145,7 +137,7 @@ ggplot(filter(total, year == 1991) )+
   geom_ribbon(aes(x=MONTH, ymin = prediction$lwr, ymax = prediction$upr), alpha = .5)+
   geom_line(aes(x=MONTH,y=prediction$fit))+
   themeo+
-  labs(title = "Linear model to correct annual phenology, based on 1991 full year coverage")
+  labs(title = "LM to correct annual phenology, from 12-month coverage in 1991")
 
 ## what would the region of practical equivalence (ROPE) be for trophic position changes
 # total %>% 
@@ -167,7 +159,7 @@ ggplot(filter(total, year == 1991) )+
 ggplot(total)+
   geom_violin(aes(x=year, y= tp, group = year),fill = "#2b8cbe",outlier.shape = NA, width = 7)+
   geom_violin(aes(x=year, y= adj_tp, group = year),color = "#e34a33",fill = "#e34a33", alpha = .4,outlier.shape = NA, width = 5)+
-  labs(title = "Raw TL by year vs annual phenology adjusted, red = adjusted, blue = raw")+
+  labs(title = "Raw TL by year vs adj annual phenology, red = adj, blue = raw")+
   themeo
 
 # assign TP to be the adjusted TP
@@ -197,7 +189,7 @@ colnames(null_df)[1] <- "prediction"
 # get quantiles from the resampled models
 null_df_quant <- null_df %>% 
   dplyr::group_by(year) %>% 
-  dplyr::summarise(upper = quantile(prediction,.025,na.rm = T),   # get 2.5%, 50%, 97.5% quantile
+  dplyr::summarise(upper = quantile(prediction,.025,na.rm = T),   # get 5%, 50%, 95% quantile
             median = quantile(prediction,.5,na.rm = T) ,
             lower =  quantile(prediction,.975,na.rm = T))
 
@@ -205,16 +197,18 @@ null_df_quant <- null_df %>%
 null_df_quant$year <- paste0("1","/","1","/",as.character(null_df_quant$year)) %>% mdy()
 total$year <- paste0("1","/","1","/",as.character(total$year)) %>% mdy()
 
-## What becomes a component of Figure 1 in the main text
+####
+#### WHAT BECOMES FIGURE 1B FROM THE MAIN TEXT
 # RF/ICE looking plot with multiple runs, no mean
 ggplot()+
   # geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), size = .1)+
   # add transparency to lines of model runs
   geom_line(data = null_df, aes(x=year,y=prediction,group = sim_num), color = "#c8be30", size = .1, alpha = 0.15)+
+#  geom_line(data = null_df_quant, aes(x=year,y = median), size = 1)+
   #geom_boxplot(data = total,aes(x=year, y= tp, group = year),outlier.shape = NA)+
   scale_x_continuous(expand = c(0,0), breaks =  c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000,2010))+
   #scale_y_continuous(limits = c(1.75,2.45), breaks =  c(1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4))+
-  scale_y_continuous(limits = c(1.98,2.7), breaks =  c(2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7))+
+  scale_y_continuous(limits = c(2,3), breaks =  c(2.0, 2.2, 2.4, 2.6, 2.8, 3))+
   labs(x=NULL)+
   labs(y="trophic position")+
   themeo
@@ -229,6 +223,7 @@ tp <- ggplot(null_df_quant)+
   #scale_y_continuous(limits = c(1,2))+
   #scale_x_date(expand = c(0,0), breaks =  c(as.Date(0)))+
   scale_x_date(expand = c(0,0))+
+  scale_y_continuous(limits = c(2,3), breaks =  c(2.0, 2.2, 2.4, 2.6, 2.8, 3))+
   labs(x=NULL)+
   themeo
 tp
@@ -238,7 +233,7 @@ ggplot(null_df_quant)+
   geom_ribbon( aes(x=year,ymin=lower,ymax=upper), size = .1, alpha = .5)+
   geom_line( aes(x=year,y = median), size = 1)+
   #geom_violin(data = total,aes(x=year, y= tp, group = year), width = 20)+
-  scale_y_continuous(limits = c(1.98,2.7), breaks =  c(2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7))+
+  scale_y_continuous(limits = c(2,3), breaks =  c(2.0, 2.2, 2.4, 2.6, 2.8, 3))+
   scale_x_date(expand = c(0,0))+
   labs(x=NULL)+
   labs(y="trophic position")+
@@ -287,34 +282,37 @@ rm(new_df,null_df,i,tp_est, tp_predict,round,mix_csv, mod91, new_month,predictio
 # Validating what amino acids are source vs trophic
 CSSIAPalila_sub <- CSSIAPalila %>% 
   filter(value == "ave") %>% 
-  mutate(avg_source = (ser + thr + phe) / 3)
+  mutate(avg_source = lys)
 
-tall_cssia <- CSSIAPalila_sub %>% gather(key = AA, value = AA_val, ala,asp,glu,gly,leu,phe,pro,val,ser,thr,avg_source )
+tall_cssia <- CSSIAPalila_sub %>% gather(key = AA, value = AA_val, glx,lys,pro)
 str(tall_cssia)
 
 time<- ggplot(tall_cssia,aes(x=year,y=AA_val,group = AA,color = AA))+
   geom_point(show.legend = F, size = .5)+
   geom_smooth(show.legend = F, size = .5)+
-  scale_color_brewer(palette = "Spectral")+
-  scale_x_continuous(expand = c(0,0))+
-  scale_y_continuous(expand = c(0,0))+
   themeo+
+  scale_color_brewer(palette = "Dark2")+
+  scale_x_continuous(expand = c(0,0), breaks = seq(1900, 2020, by = 20))+
+  scale_y_continuous(expand = c(0,0), breaks = seq(-4, 24, by = 4))+
+  labs(y="d15N %")+
+  
   labs(title = "Amino acid N15 through time")
 
 space <- ggplot(tall_cssia,aes(x=AA_val,group = AA,fill = AA, color = AA))+
   geom_density(alpha = .5)+
-  #geom_histogram(alpha = .5, bins = 100)+
-  scale_fill_brewer(palette = "Spectral")+
-  scale_color_brewer(palette = "Spectral")+
-  scale_x_continuous(expand = c(0,0))+
-  #scale_y_continuous(expand = c(0,0), limits = c(0,.53))+
-  themeo
+  themeo+
+  scale_fill_brewer(palette = "Dark2")+
+  scale_color_brewer(palette = "Dark2")+
+  scale_x_continuous(expand = c(0,0), breaks = seq(-4, 20, by = 4))+
+  labs(x="d15N %")
 
 gridExtra::grid.arrange(time,space, layout_matrix = c(1,1,2) %>% as.matrix())
 rm(time,space,CSSIAPalila_sub, tall_cssia)
 
 
-# drought index attempts
+#####
+##### PLOTTING RAW ENVIRONMENTAL FACTOR DATA
+
 SPEI <- read.csv('./data/environ_covars/spei_-155.25_19.75.csv',header = T, skip = 1)
 SPEI$year <- seq.Date(from = mdy('01/01/1901'), by = "month" , length.out = nrow(SPEI)) #seq(1:nrow(SPEI))
 str(SPEI)
@@ -347,8 +345,7 @@ drought
 # temp
 # two cells over relevant areas
 # temp <- read.table('https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.01/ge/grid05/cells/N17.5W157.5/tmp/N19.75W155.75.tmp.txt', header = T, skip = 4)
-# closer to mauna kea/loa
-
+# closer to Mauna Kea and Mauna Loa
 
 ## Modified script to reflect new data URL link through Google Earth kml 5degree grid
 
@@ -431,7 +428,6 @@ mod_df <- empty_yrs %>%
          upper = na.approx(upper, na.rm = F),
          lower = na.approx(lower, na.rm = F))
 
-
 # generating an index of caterpillar parasitism rate
 intro_date <- mdy('01/01/1950')    # introduction date
 known_date1 <- mdy('01/01/1997')   # date(s) for known data
@@ -467,8 +463,6 @@ p_rate <- c(
   rep(0,zero_index[[2]]),   # pre introduction
   pred_parasitism$.         # post introduction model
 )
-
-
 
 
 wasps <- data.frame( year = empty_yrs, parasitism = p_rate)
@@ -720,15 +714,12 @@ gridExtra::grid.arrange(SPEI36_bayes,parasitism_bayes,temp_bayes)
 # xgb.plot.importance(xgb.importance(model = pima.xgb))
 # xgb.plot.deepness(model = pima.xgb)
 # 
-# # ??? Partial of diabetes test result on glucose ???
 # partial(pima.xgb, pred.var = "rollmean", plot = TRUE, train = X, rug = T)
 # partial(pima.xgb, pred.var = "SPEI36", plot = TRUE, train = X)
 # partial(pima.xgb, pred.var =  c("SPEI36", "rollmean"), plot = T, chull = T, train = X, progress = "text")
 # 
 # plotPartial(partial(pima.xgb, pred.var =  c("SPEI36", "rollmean"), train = X, chull = T, progress = "text"), levelplot = FALSE, colorkey = TRUE, 
 #             screen = list(z = 120, x = -60))
-# 
-# 
 # 
 # #plotly 3D surface
 # library(plotly)
@@ -777,8 +768,6 @@ gridExtra::grid.arrange(SPEI36_bayes,parasitism_bayes,temp_bayes)
 # 
 #   }
 # 
-# 
-# 
 # ggplot(mod_df,aes(x=year %>% as.numeric()))+
 #   geom_line(aes(y = SPEI36),size = .1, color = "gray")+
 #   geom_bar(stat = "identity", aes( y = SPEI36, fill = ifelse(SPEI36>0,"red","green")), show.legend = F)+
@@ -825,7 +814,6 @@ gridExtra::grid.arrange(SPEI36_bayes,parasitism_bayes,temp_bayes)
 #   themeo
 # 
 # grid.arrange(smooth_tp,raw_tp,drought,temp, nrow = 1)
-# 
 # 
 # str(mod_df)
 # 
