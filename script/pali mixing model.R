@@ -93,10 +93,10 @@ TP_prior <- c(18,      79,        3     )
 # Error in UseMethod("depth") : 
 #  no applicable method for 'depth' applied to an object of class "NULL"
   
-  plot_continuous_var(jags.1, mix, source, output_options)
+plot_continuous_var(jags.1, mix, source, output_options)
   
 # Error in plot_continuous_var(jags.1, mix, source, output_options) : object 'output_options' not found  
-  
+# but it does actually plot  
   
   rm(jags.1,model_filename)
 
@@ -230,8 +230,8 @@ TP_prior <- c(18,      79,        3     )
 df %>% 
   select(x, source, median) %>%  
   spread(key = source, value = median) %>% 
-  mutate(feed_ration = MAMANE_NAIO / (CYDIA_ARTHO_FOLCAT + SPIDER) ) %>% 
-  ggplot() +
+  mutate(feed_ration = MAMANE_NAIO / (CYDIA_FOLCAT + SPIDER_INSECT) ) %>% 
+ggplot() +
   geom_line(aes(x = x, y = feed_ration))+
   scale_x_continuous(expand = c(0,0))+
   themeo+

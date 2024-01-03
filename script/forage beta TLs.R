@@ -406,7 +406,7 @@ img2 <- grid::rasterGrob(sil2, interpolate = TRUE)
 ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
   theme(legend.position = "none") + #ggdist is already grouping the TL categories
-  stat_dots(quantiles = 200, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls side of dots
+  stat_dots(quantiles = 200, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls size of dots
   stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 1) + # adjust regulates bandwidth/smoothness
   scale_fill_manual(values = c("#3288bd", "#990033")) +
   scale_color_manual(values = c("#3288bd", "#990033")) +
