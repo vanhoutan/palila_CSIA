@@ -595,8 +595,7 @@ bayestestR::equivalence_test(
 
 # Figure S5 the traceplot diagnostic with posteriors
 library("bayesplot")
-bayesplot::
-color_scheme_set("mix-blue-red")
+bayesplot::color_scheme_set("mix-blue-red")
 coef_plot <- mcmc_areas(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"))
 color_scheme_set("viridis")
 tracer <- mcmc_trace(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"), 

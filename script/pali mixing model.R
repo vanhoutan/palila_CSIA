@@ -188,7 +188,6 @@ plot_continuous_var(jags.1, mix, source, output_options)
     ggplot2::labs(title = fac.lab) +
     ggplot2::ylab("Diet Proportion") +
     ggplot2::xlab(label) +
-
     scale_color_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_fill_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_x_continuous(expand = c(0,0))+
