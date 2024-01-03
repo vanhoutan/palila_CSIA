@@ -101,7 +101,8 @@ total<-merge(data,TPforID_all, by="ucdavis_id")
 rm(dataList,data,TPforID_all)
 
 # random sample by year to reduce multiple year bias
-total <- total %>% group_by(year) %>% dplyr::sample_n(500) %>% ungroup()
+# n=100 should do it
+total <- total %>% group_by(year) %>% dplyr::sample_n(100) %>% ungroup()
 
 str(total)
 
@@ -242,7 +243,7 @@ ggplot(null_df_quant)+
 # plotting the traverse that Palila takes across constant TL of prey items
 # could be interesting supplemental figure that shows 3 major forage item groups
 
-source_csv <- read.csv("data/mixing model/source_data3.csv") # estimated prey item TL, dev in prey_TL.R saved for mixing model as .csv
+source_csv <- read.csv("data/mixing model/source_dataX.csv") # estimated prey item TL, dev in prey_TL.R saved for mixing model as .csv
 source_csv_plot <- rbind(source_csv,source_csv)  
 source_csv_plot$year <- NULL
 source_csv_plot$year[1:(nrow(source_csv_plot)/2)] <- '1/1/1890'  %>% mdy()

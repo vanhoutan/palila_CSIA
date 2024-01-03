@@ -94,7 +94,7 @@ TP_prior <- c(18,      79,        3     )
 #  no applicable method for 'depth' applied to an object of class "NULL"
   
 plot_continuous_var(jags.1, mix, source, output_options)
-  
+# plot_continuous_var(jags.1, mix, source) this doesnt work either
 # Error in plot_continuous_var(jags.1, mix, source, output_options) : object 'output_options' not found  
 # but it does actually plot  
   
