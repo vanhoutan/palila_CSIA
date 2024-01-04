@@ -402,19 +402,20 @@ sil1 <- readPNG("/Users/kylevanhoutan/palila_CSIA/images/larvae.png", native = T
 sil2 <- readPNG("/Users/kylevanhoutan/palila_CSIA/images/spider.png", native = TRUE)
 img1 <- grid::rasterGrob(sil1, interpolate = TRUE)
 img2 <- grid::rasterGrob(sil2, interpolate = TRUE)
+
 #make the plot
 ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
   theme(legend.position = "none") + #ggdist is already grouping the TL categories
-  stat_dots(quantiles = 200, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls size of dots
-  stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 1) + # adjust regulates bandwidth/smoothness
+  stat_dots(quantiles = 100, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls size of dots
+  stat_halfeye(side = "top", alpha = 0.75, adjust = 0.8, height = 1) + # adjust regulates bandwidth/smoothness
   scale_fill_manual(values = c("#3288bd", "#990033")) +
   scale_color_manual(values = c("#3288bd", "#990033")) +
-  scale_x_continuous(limits = c(2,12), breaks = seq(2, 12, by = 1)) +
+  scale_x_continuous(limits = c(2,11), breaks = seq(2, 11, by = 1)) +
   xlab("TEF (d15N %)") +
   ylab("trophic level") +
-  stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5,
-               fun = "median", aes(label = round(after_stat(x), 2),
+  stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5, hjust = -0.75,
+               fun = "ave", aes(label = round(after_stat(x), 2),
                color = TEF , color = after_scale(darken(color, 0.5)))) +
   inset_element(p = img1, left = 0.075, bottom = 0.3, right = 0.21, top = 0.4) + # insert the silhouettes
   inset_element(p = img2, left = 0.05, bottom = 0.68, right = 0.25, top = 0.88)
