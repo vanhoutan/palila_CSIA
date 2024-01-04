@@ -295,7 +295,6 @@ time<- ggplot(tall_cssia,aes(x=year,y=AA_val,group = AA,color = AA))+
   scale_x_continuous(expand = c(0,0), breaks = seq(1900, 2020, by = 20))+
   scale_y_continuous(expand = c(0,0), breaks = seq(-4, 24, by = 4))+
   labs(y="d15N %")+
-  
   labs(title = "Amino acid N15 through time")
 
 space <- ggplot(tall_cssia,aes(x=AA_val,group = AA,fill = AA, color = AA))+
@@ -545,6 +544,11 @@ get_prior(formula_list[[each_formula]], data = mod_df, family = gaussian())
 
 data_f <- sample_frac(mod_df,.9) %>% as.data.frame()
 
+### FYI new Mac OS had me install additional builder tools for C++ compiler
+### This update was prompted from within R
+### but was completed in a separate Mac OS dialogue outside of R
+### without this, brms wont run
+
 data.brms = brm(formula_list[[each_formula]], 
                 data = data_f, 
                 
@@ -588,6 +592,7 @@ launch_shinystan(data.brms)
 # equi_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+
 
 # bayestestR::equivalence_test(x = data.brms, rope = c(-sd(mod_df$raw_tp)*.2,sd(mod_df$raw_tp)*.2), out = "plot")+ theme_bw()+ coord_flip()
+
 bayestestR::equivalence_test(
   x = data.brms,
   range = c(-sd(mod_df$raw_tp)*.2,
@@ -596,13 +601,14 @@ bayestestR::equivalence_test(
 # Figure S5 the traceplot diagnostic with posteriors
 library("bayesplot")
 bayesplot::color_scheme_set("mix-blue-red")
-coef_plot <- mcmc_areas(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"))
+# added b_parasitism
+coef_plot <- mcmc_areas(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_parasitism", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"))
 color_scheme_set("viridis")
-tracer <- mcmc_trace(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"), 
+tracer <- mcmc_trace(data.brms %>% as.array(), pars = c("b_rollmean", "b_SPEI36", "b_parasitism", "b_rollmean:SPEI36", "b_SPEI36:parasitism", "sigma"), 
                      facet_args = list(ncol = 1, strip.position = "left"))
 gridExtra::grid.arrange(coef_plot, tracer, ncol = 2)
 
-# posterior plots
+# posterior plots, nothing terribly insightful except highly specific
 plot(hypothesis(data.brms, "rollmean > 0"))
 plot(hypothesis(data.brms, "SPEI36 > 0"))
 plot(hypothesis(data.brms, "rollmean:SPEI36 > 0"))
@@ -611,7 +617,6 @@ library(RColorBrewer)
 
 # Figure 4 in the main text
 # marginal effects plots with prediction intervals
-
 SPEI36_bayes <- mod_df %>%
   data_grid(SPEI36 = seq_range(SPEI36, n = 10), rollmean = seq_range(rollmean, n = 10), parasitism = seq_range(parasitism, n = 10)) %>%
   tidybayes::add_predicted_draws(data.brms) %>%
@@ -816,16 +821,3 @@ gridExtra::grid.arrange(SPEI36_bayes,parasitism_bayes,temp_bayes)
 # 
 # str(mod_df)
 # 
-
-
-
-
-
-
-
-
-
-
-
-
-  
