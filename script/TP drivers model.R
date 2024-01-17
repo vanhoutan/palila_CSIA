@@ -1,4 +1,8 @@
-#load libraries
+#### this code runs the basic calculation and simulation of trophic position (TP)
+#### for palila, using the CSIA-AA d15N data from bird feathers
+#### it measures and plots TP, and runs a Bayesian regression to assess environmental drivers
+
+
 library(brms)         # stan wrapper for building bayesian regression models easily in r
 library(ggplot2)      # plotting and viz
 library(plyr)         # legacy df manip
@@ -443,12 +447,12 @@ parasite_data <- data.frame( year = empty_yrs %>% filter(year %in% c(intro_date,
 # fit a model to it
 para_mod <- lm(parasitism ~ year, data = parasite_data)
 
-# predict accross all years after introduction
+# predict across all years after introduction
 sim_range <- empty_yrs %>% filter(year > intro_date)
 pred_parasitism <- predict(para_mod, newdata =  sim_range) %>% as.data.frame()
 
 # logistic/sigmoid alternative (needs additoinal estimates compared to lm)
-y <- c(parasite_data$parasitism,.4, .47, .51)              # ratios drawn from lit, with possible final parasitation estimate
+y <- c(parasite_data$parasitism,.4, .47, .51)              # ratios drawn from lit, with possible final parasitism estimate
 x <- c(as.numeric(parasite_data$year),9862, 10592,20089)   # relative years, but in numerical format derived via as.numeric( mdy('01/01/2025'))
 log.ss <- nls(y ~ SSlogis(x, phi1, phi2, phi3))            # fit logistic model via nls
 plot(as.Date(x),y)
@@ -463,12 +467,26 @@ p_rate <- c(
   pred_parasitism$.         # post introduction model
 )
 
-
+## wasps DF is the model based on 4 data points
 wasps <- data.frame( year = empty_yrs, parasitism = p_rate)
-plot(wasps$year,wasps$parasitism, ylim = c(0,1), type = "l")
+
+##  wasps2 DF is the series based on the parasitism rates data in 
+## Oboyski et al. 2004, Brenner et al. 2002, and Slotterback et al. 2014
+## considering biogeographical accounts, invasion dates, etc 
+wasps2 <- read.csv('data/environ_covars/wasps2.csv')
+glimpse(wasps2) # check on format, year col is in character format :(
+# use lubridate lib to convert proper format
+wasps2 <- wasps2 %>%
+  mutate(year = ymd(year)) %>% # reformat just the year col
+  glimpse() # checks on the output, it's OK
+
+# plot(wasps$year,wasps$parasitism, ylim = c(0,1), type = "l")
+plot(wasps2$year,wasps2$parasitism, ylim = c(0.25,0.5), type = "l")
+
 
 mod_df <- mod_df %>% 
-  full_join(wasps, by = "year") %>% 
+#  full_join(wasps, by = "year") %>% 
+  full_join(wasps2, by = "year") %>% # use the revised parasitism time series from Banko & Peck
   arrange(year)
 
 para_gg <- ggplot(mod_df)+
@@ -476,8 +494,11 @@ para_gg <- ggplot(mod_df)+
                 y = parasitism), size = 1, color = "orange2" )+
   labs(x = NULL, y = "parasitism rate")+
   scale_x_date(limits = c(min(temp2$date), max(temp2$date)), expand = c(0,0))+
-  scale_y_continuous(limits = c(0,0.7))+
+  scale_y_continuous(limits = c(0.2,0.5))+
   themeo
+
+para_gg
+
 
 # Full version of figure S4
 gridExtra::grid.arrange(tp,drought,temp,para_gg, ncol = 1)
