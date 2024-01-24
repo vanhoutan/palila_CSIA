@@ -9,16 +9,13 @@ library(rjags)
 library(R2jags)
 
 
-##############################
-###  Custom ggPlot theme   ###
-##############################
 themeo <- ggplot2::theme_classic()+
   ggplot2::theme(strip.background = element_blank(),
                  axis.line = element_blank(),
                  axis.text.x = element_text(margin = margin( 0.2, unit = "cm")),
                  axis.text.y = element_text(margin = margin(c(1, 0.2), unit = "cm")),
                  axis.ticks.length=unit(-0.1, "cm"),
-                 panel.border = element_rect(colour = "black", fill=NA, size=.5),
+                 panel.border = element_rect(colour = "black", fill=NA, linewidth = .5),
                  legend.title=element_blank(),
                  strip.text=element_text(hjust=0) )
 
@@ -26,8 +23,7 @@ sppx<- "PALI"
 x = 1
 
 #for(x in 1:length(sppx)){
-#  mix<-read.csv('data/mixing model/mixture_data.csv')
-mix<-read.csv('data/mixing model/mixture_data2.csv')
+mix<-read.csv('data/mixing model/mixture_data3.csv')
 str(mix)
   mix<-subset(mix, spp == sppx[x])
   write.csv(mix,file = "data/mixing model/mixture_data_spp.csv")
@@ -37,9 +33,9 @@ str(mix)
                       fac_random = TRUE,fac_nested = NULL,cont_effects = "year")
   
   #source data #new omma and caran TL
-  source <- load_source_data( filename = "data/mixing model/source_data.csv",
+  source <- load_source_data( filename = "data/mixing model/source_dataX.csv",
                               source_factors = NULL,conc_dep = FALSE,data_type = "means", mix)
-  
+
   #widen priors of source distributions
   source$S_SIG[,1] <- source$S_SIG[,1]
   
@@ -57,14 +53,14 @@ str(mix)
   #uninformative prior = alpha.prior = 1
   #construct informative prior from stomach_proportional_plot_apr13.xlsx
 
-             # "ARTHO"  "CYDIA"  "FOLCAT" "MAMANE" "NAIO"   "SPIDER"
+             # "INSECT"  "CYDIA"  "FOLCAT" "MAMANE" "NAIO"   "SPIDER"
 TP_prior <- c(1,      10,        8,         74,      5,      2)
   
-               # "CYDIA_ARTHO_FOLCAT" "MAMANE_NAIO" "SPIDER" 
-TP_prior <- c(19,      82,        2     )
+               # "CYDIA_FOLCAT" "MAMANE_NAIO" "SPIDER_INSECT" 
+TP_prior <- c(18,      79,        3     )
   
   
-  # Generate alpha hyperparameters scaling sum(alpha)=n.sources
+# Generate alpha hyperparameters scaling sum(alpha)=n.sources
   TP_prior <- TP_prior*length(TP_prior)/sum(TP_prior)
   #TP_prior <- rep(1,6)
   #TP_prior <- TP_prior*10
@@ -77,6 +73,8 @@ TP_prior <- c(19,      82,        2     )
   plot_prior(alpha.prior = TP_prior, source,
            plot_save_pdf=FALSE,
          plot_save_png=FALSE)
+
+  
   #write jags model
   model_filename <- "MixSIAR_model.txt"
 
@@ -95,10 +93,10 @@ TP_prior <- c(19,      82,        2     )
 # Error in UseMethod("depth") : 
 #  no applicable method for 'depth' applied to an object of class "NULL"
   
-  plot_continuous_var(jags.1, mix, source, output_options)
-  
+plot_continuous_var(jags.1, mix, source, output_options)
+# plot_continuous_var(jags.1, mix, source) this doesnt work either
 # Error in plot_continuous_var(jags.1, mix, source, output_options) : object 'output_options' not found  
-  
+# but it does actually plot  
   
   rm(jags.1,model_filename)
 
@@ -182,8 +180,7 @@ TP_prior <- c(19,      82,        2     )
   
   # Plot of Diet vs. Cont effect
   # Page 370 in Francis et al (2011)
-  
-  # Figure S8b in the supplement
+  # supplement Figure S8b 
   
   ggplot2::ggplot(data=df,ggplot2::aes(x=x,y=median)) +
     ggplot2::geom_line(ggplot2::aes(x=x, y=median,group=source,colour=source),size=1.5) +
@@ -191,7 +188,6 @@ TP_prior <- c(19,      82,        2     )
     ggplot2::labs(title = fac.lab) +
     ggplot2::ylab("Diet Proportion") +
     ggplot2::xlab(label) +
-
     scale_color_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_fill_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_x_continuous(expand = c(0,0))+
@@ -210,23 +206,17 @@ TP_prior <- c(19,      82,        2     )
     geom_area(aes(x = x, y = median, fill = source, group = source), position = 'stack', show.legend = F, alpha = .85)+
     geom_area(aes(x = x, y = low, fill = source, group = source), fill = NA, color = "black", position = 'stack', lty = "dashed", size = .25)+
     geom_area(aes(x = x, y = high, fill = source, group = source), fill = NA, color = "black", position = 'stack', lty = "dashed", size = .25)+
-    
-    annotate("text", x = 1920, y = .9, label = "CATERPILLAR/ARTHROPOD")+
-    annotate("text", x = 1980, y = .7, label = "MAMANE/NAIO")+
-    annotate("text", x = 1900, y = .1, label = "SPIDER")+
-   
+    annotate("text", x = 1920, y = .9, label = "Caterpillars + other Insects")+
+    annotate("text", x = 1980, y = .7, label = "Mamane + Naio")+
+    annotate("text", x = 1900, y = .1, label = "Spiders")+
     ggplot2::labs(title = fac.lab) +
     ggplot2::ylab("proportion of diet") +
-    ggplot2::xlab(label) +
+    ggplot2::xlab(NULL) +
     scale_color_manual(values = c("#faa61a","#008745","#3a60ac"))+
     scale_fill_manual(values = c("#faa61a","#008745","#3a60ac"))+
-    scale_x_continuous(expand = c(0,0))+
-    scale_y_continuous(expand = c(0,0), 
-                       breaks = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))+
-    # scale_y_continuous(expand = c(0,0))+
-    
-    themeo+
-    theme(strip.background = element_blank(),
+    scale_x_continuous(expand = c(0,0), breaks = c(1900,1920,1940,1960,1980,2000))+
+    scale_y_continuous(expand = c(0,0), breaks = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))+
+    themeo+ theme(strip.background = element_blank(),
           panel.border = element_rect(colour = "black", fill=NA, size=.5),
           legend.title=element_blank(),
           strip.text=element_text(hjust=0),
@@ -239,8 +229,8 @@ TP_prior <- c(19,      82,        2     )
 df %>% 
   select(x, source, median) %>%  
   spread(key = source, value = median) %>% 
-  mutate(feed_ration = MAMANE_NAIO / (CYDIA_ARTHO_FOLCAT + SPIDER) ) %>% 
-  ggplot() +
+  mutate(feed_ration = MAMANE_NAIO / (CYDIA_FOLCAT + SPIDER_INSECT) ) %>% 
+ggplot() +
   geom_line(aes(x = x, y = feed_ration))+
   scale_x_continuous(expand = c(0,0))+
   themeo+

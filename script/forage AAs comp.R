@@ -30,9 +30,9 @@ data %>%
     # trophic AA
     glu, 
     # source AA
-    phe,ser,thr, spp, ucdavis_id) %>% 
+    lys, spp, ucdavis_id) %>% 
   group_by(spp) %>% 
-  mutate(beta = glu - (phe+thr+ser) ) %>% 
+  mutate(beta = glu - lys ) %>% 
   mutate(beta_mu = mean(beta) )
 
 
@@ -47,29 +47,16 @@ GetTP <- function(anID){
   
   num_of_draws = 1000
   
-  # Chikaraishi standard is b = 8.4 TEF = 7.6
-  # b =   2.1
-  # TEF = 5.9
+b =   1.5183 # see 'forage beta TLs.R' script for derivation
+TEF = 7.4354 # see 'forage beta TLs.R' script for derivation
   
-  # b below is derived from methods in Chikaraishi et al 2009, using difference between trp and src AAs in primary producers
-  # Nielsen et al 2015 described multiple ways to derive TEF based on multiple AA data
-  # we followed the guidance of both studies
-  b =   1.6   
-  TEF = 5.3
-    
-  # trophic amino acids
-  ala.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ala")) , sd = as.numeric(subset(anID, value == "sd", select = "ala"))) # alanine
+# trophic amino acid
   glu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamic acid
-  leu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "leu")) , sd = as.numeric(subset(anID, value == "sd", select = "leu"))) # leucine
-  pro.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "pro")) , sd = as.numeric(subset(anID, value == "sd", select = "pro"))) # pro
-  val.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "val")) , sd = as.numeric(subset(anID, value == "sd", select = "val"))) # v
+
+# source amino acid
+  lys.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "lys")) , sd = as.numeric(subset(anID, value == "sd", select = "lys"))) # lysine
   
-  # source amino acids
-  thr.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "thr")) , sd = as.numeric(subset(anID, value == "sd", select = "thr"))) # ser
-  ser.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ser")) , sd = as.numeric(subset(anID, value == "sd", select = "ser"))) # ser
-  phe.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "phe")) , sd = as.numeric(subset(anID, value == "sd", select = "phe"))) # ser
-  
-  TPforID <- (((((glu.est)/1)) - ((thr.est+ser.est+phe.est)/3) - b)/TEF ) + 1  # function to estimate TP via source and trophic AA with constants 
+  TPforID <- (((((glu.est)/1)) - ((lys.est)/1) - b)/TEF ) + 1  # function to estimate TP via source and trophic AA with constants 
   
   return(TPforID)
 }
@@ -108,7 +95,6 @@ density<-ggplot(data = total, aes(group = spp, x = tp, fill = spp, color = spp))
   xlab("trophic position")
 
 density
-
 
 # density<-ggplot(data = total, aes(group = spp, x = tp, fill = spp), color = "black")+
 #   geom_density(aes(x = tp + .01),show.legend = F, kernel = "gaussian", alpha = .5, fill = "black", color = NA)+
@@ -160,19 +146,12 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on specimen ID
     
     num_of_draws = 1000
 
-    # trophic amino acids
-    ala.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ala")) , sd = as.numeric(subset(anID, value == "sd", select = "ala"))) # alanine
+# trophic amino acids
     glu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "glu")) , sd = as.numeric(subset(anID, value == "sd", select = "glu"))) # glutamic acid
-    leu.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "leu")) , sd = as.numeric(subset(anID, value == "sd", select = "leu"))) # leucine
-    pro.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "pro")) , sd = as.numeric(subset(anID, value == "sd", select = "pro"))) # pro
-    val.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "val")) , sd = as.numeric(subset(anID, value == "sd", select = "val"))) # v
+# source amino acids
+    lys.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "lys")) , sd = as.numeric(subset(anID, value == "sd", select = "lysine"))) # lysine
     
-    # source amino acids
-    thr.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "thr")) , sd = as.numeric(subset(anID, value == "sd", select = "thr"))) # ser
-    ser.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "ser")) , sd = as.numeric(subset(anID, value == "sd", select = "ser"))) # ser
-    phe.est<- rnorm(num_of_draws, mean = as.numeric(subset(anID, value == "ave", select = "phe")) , sd = as.numeric(subset(anID, value == "sd", select = "phe"))) # ser
-    
-    TPforID <- cbind(ala.est,glu.est,leu.est,pro.est,val.est,thr.est,ser.est,phe.est)
+    TPforID <- cbind(glu.est,lys.est)
 
     return(TPforID)
   }
@@ -186,11 +165,11 @@ data <- data %>% filter(value == "ave") %>% select(ucdavis_id,spp)
 total<-merge(data,TPforID_all, by="ucdavis_id")
 
 
-# source acids
+# source AA
 source_AAs <- total %>% 
-  filter(aa_name %in% c("phe.est","thr.est","ser.est")) %>% 
+  filter(aa_name %in% c("lys.est")) %>% 
   spread(aa_name,aa_val) %>% 
-  mutate(source_mean = (thr.est + ser.est + phe.est) /3 ) %>% 
+  mutate(source_mean = (lys.est)) %>% 
   ggplot() +
   geom_density(aes(x = source_mean, fill = spp), alpha = .7, show.legend = F)+
   geom_hline(yintercept = 0, color = "black", size = .5)+
@@ -201,7 +180,7 @@ source_AAs <- total %>%
   xlab(expression(paste(delta^15,"N"["Source"]) ) )
 
 
-# trophic acids
+# trophic AA
 trophic_AAs <- total %>% 
   filter(aa_name %in% c( "glu.est")) %>% 
   spread(aa_name,aa_val) %>% 

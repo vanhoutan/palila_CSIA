@@ -31,7 +31,7 @@ themeKV <- theme_few()+
         axis.ticks.length=unit(-0.15, "cm"),element_line(colour = "black", linewidth=.5),
         panel.border = element_rect(colour = "black", fill=NA, linewidth=.5),
         legend.title=element_blank(),
-        strip.text=element_text(hjust=0, size=8))
+        strip.text=element_text(hjust=0))
 
 
 #### Determine which trophic and source AA combinations are suitable 
@@ -150,24 +150,17 @@ Beta_total<-merge(data_sm,Beta_gather, by="ucdavis_id")
 #### make a box plot to compare results of different Beta formulations
 # similar form to Fig 5 from Besser et al 2022
 # but scale free y axes to emphasize whatever structure is there
-p1 <- ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
+ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   themeKV +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank(),
-        legend.position="bottom",
-        axis.text.y = element_text(size = 7, margin = margin(c(1, 0.1), unit = "cm")),
-        axis.title.y = element_text(size = 10),
-        legend.key.height = unit(0.5, 'cm'), # shrink the native height of legend
-        legend.text = element_text(size=7), # reduce font size on legend
-        panel.spacing.x = unit(0, "lines")) + # move panels closer horiz
+        axis.ticks.x = element_blank()) +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
-  geom_boxplot(alpha=0.9, colour = "black", linewidth = 0.25, outlier.color = NA) +
+  geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25, outlier.color = NA) +
   scale_fill_manual(values=c("#5e4fa2", "#66c2a5")) +
-  scale_y_continuous(breaks= pretty_breaks()) +
+#  scale_y_continuous(breaks = seq(-30, 10, by = 5)) +
   ylab("Beta (d15N %)") + # this needs to read β(δ15N ‰) but it wont print to PDF
   facet_wrap(~beta, ncol=6, scales = "free_y")
-  #facet_wrap(~beta, ncol=6)
-
 
 
 #### Do a new analysis to pull random variates from AA distributions
@@ -320,20 +313,14 @@ data2_sm<-subset(data2, select = -c(photo, value, ala, asp, glu, gly, lys, leu, 
 AA_total<-merge(data2_sm,AA_gather, by="ucdavis_id")
 
 #### make a box plot to compare results of AAs across trophic levels
-p2 <- ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
-  themeKV + 
-  theme(legend.position = "none",
-        axis.text.x = element_text(size = 8),
-        axis.title.x = element_text(size = 10),
-        axis.text.y = element_text(size = 8),
-        axis.title.y = element_text(size = 10),) + 
+ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
+  themeKV + theme(legend.position = "none") +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
-  geom_boxplot(alpha=0.75, colour = "black", linewidth = 0.25, outlier.color = NA) +
-  scale_y_continuous(breaks= pretty_breaks()) +
+  geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25, outlier.color = NA) +
+#  scale_y_continuous(breaks= pretty_breaks()) +
   scale_fill_brewer(palette = "Spectral")+
   ylab("d15N (%)") + # this needs to read δ15N (‰) but it wont print to PDF
-  facet_wrap(~AA, ncol=6, scales = "free_y")
-  # facet_wrap(~AA, ncol=6)
+  facet_wrap(~AA, ncol=4, scales = "free_y")
 
 
 
@@ -353,10 +340,10 @@ dataList = split(data, data$ucdavis_id) #split raw data up based on lab specimen
 # use these to generate X estimates of TEF, by first estimating TEF at TL=2 and TL=3 
 # TEF is defined by Nielsen et al 2015 (https://doi.org/10.1007/s00442-015-3305-7)
 # set # of random variates drawn from norm distrib, outside of the function to avoid repetition
-num_draws = 100
-beta = 1.9063 # this is AAtrp - AAsrc at TL=1, where we pair Glu and Lys
-# importantly, this is weighted 90% for mamane, and 10% for naio
-# as per palila foraging data observations
+num_draws = 500
+beta = 1.5183 # this is AAtrp - AAsrc at TL=1, where we pair Glu and Lys
+# importantly, this value is unweighted between mamane and naio
+
 
 # start with TEF at TL=2 
 GetTEF2 <- function(anID){
@@ -370,8 +357,8 @@ TEF2 = reshape2::melt(TEF2)           # melt the df
 TEF2$L1 <- as.factor(TEF2$L1)                              
 setnames(TEF2, old=c("L1","value"), new=c("ucdavis_id", "TEF_TL2"))    # replace TEF value column header with TEF formulation 
 TEF2 <- TEF2[, c(2, 1)]    # reorder columns
-# check data, should average to ~ 6.4
-mean(TEF2$TEF_TL2) # 6.419575
+# check data, should average to ~ 6.85
+mean(TEF2$TEF_TL2) # 6.816975
 
 # repeat above but for TL=3 to calculate TEF3
 # subset SIL data for TL=3 
@@ -392,8 +379,8 @@ TEF3 = reshape2::melt(TEF3)           # melt the df
 TEF3$L1 <- as.factor(TEF3$L1)                              
 setnames(TEF3, old=c("L1","value"), new=c("ucdavis_id", "TEF_TL3"))    # replace TEF value column header with TEF formulation 
 TEF3 <- TEF3[, c(2, 1)]    # reorder columns
-# check data, should average to ~ 7.6
-mean(TEF3$TEF_TL3) # 7.586594
+# check data, should average to ~ 8.02
+mean(TEF3$TEF_TL3) # 8.024405
 
 #### now bind all the TEF formulations into one single frame
 TEF_tot <- cbind(TEF2, TEF3$TEF_TL3)
@@ -403,8 +390,8 @@ setnames(TEF_tot, old=c("TEF_TL2", "TEF3$TEF_TL3"),
 # reshape df from wide to long using gather()
 TEF_gather <- gather(TEF_tot, key="TEF", value="value", 2:3)
 # no need for metadata additions from original data
-# calculate global TEF from the palila forage data, should ~ 7.0
-mean(TEF_gather$value) # 7.036752
+# calculate global TEF from the palila forage data, should ~ 7.44
+mean(TEF_gather$value) # 7.42069
 
 
 #### make a raincloud style plot of the TEF values 
@@ -417,33 +404,18 @@ img1 <- grid::rasterGrob(sil1, interpolate = TRUE)
 img2 <- grid::rasterGrob(sil2, interpolate = TRUE)
 
 #make the plot
-p3 <- ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
+ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
-  theme(legend.position = "none", #ggdist is already grouping the TL categories
-        axis.text.x = element_text(size = 8),
-        axis.title.x = element_text(size = 10),
-        axis.text.y = element_text(size = 8),
-        axis.title.y = element_text(size = 10),) + 
+  theme(legend.position = "none") + #ggdist is already grouping the TL categories
   stat_dots(quantiles = 100, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls size of dots
-  stat_halfeye(side = "top", alpha = 0.75, adjust = .5, height = 1) + # adjust regulates bandwidth/smoothness
+  stat_halfeye(side = "top", alpha = 0.75, adjust = 0.8, height = 1) + # adjust regulates bandwidth/smoothness
   scale_fill_manual(values = c("#3288bd", "#990033")) +
   scale_color_manual(values = c("#3288bd", "#990033")) +
-  scale_x_continuous(breaks = seq(2, 12, by = 1)) +
+  scale_x_continuous(limits = c(2,11), breaks = seq(2, 11, by = 1)) +
   xlab("TEF (d15N %)") +
   ylab("trophic level") +
-  stat_summary(geom = "text", fontface = "bold", size = 4, vjust = -1.5,
-               fun = "median", aes(label = round(after_stat(x), 2),
+  stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5, hjust = -0.75,
+               fun = "ave", aes(label = round(after_stat(x), 2),
                color = TEF , color = after_scale(darken(color, 0.5)))) +
   inset_element(p = img1, left = 0.075, bottom = 0.3, right = 0.21, top = 0.4) + # insert the silhouettes
   inset_element(p = img2, left = 0.05, bottom = 0.68, right = 0.25, top = 0.88)
-
-
-layout <- "
-AAAAAAA
-BBBBBCC"
-p2 + p1 + p3 +
-  plot_layout(design = layout) +
-  plot_annotation(tag_levels = 'a') # add panel labels a, b, c... etc
-
-
-# END
