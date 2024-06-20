@@ -150,7 +150,7 @@ Beta_total<-merge(data_sm,Beta_gather, by="ucdavis_id")
 #### make a box plot to compare results of different Beta formulations
 # similar form to Fig 5 from Besser et al 2022
 # but scale free y axes to emphasize whatever structure is there
-ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
+p1 <- ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   themeKV +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank(),
@@ -158,6 +158,7 @@ ggplot(Beta_total, aes(x = photo, y = value, fill = photo)) +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
   geom_boxplot(alpha=0.5, colour = "black", linewidth = 0.25, outlier.color = NA) +
   scale_fill_manual(values=c("#5e4fa2", "#66c2a5")) +
+  theme(legend.position="bottom") +
 #  scale_y_continuous(breaks = seq(-30, 10, by = 5)) +
   ylab("Beta (d15N %)") + # this needs to read β(δ15N ‰) but it wont print to PDF
   facet_wrap(~beta, ncol=6, scales = "free_y")
@@ -313,14 +314,14 @@ data2_sm<-subset(data2, select = -c(photo, value, ala, asp, glu, gly, lys, leu, 
 AA_total<-merge(data2_sm,AA_gather, by="ucdavis_id")
 
 #### make a box plot to compare results of AAs across trophic levels
-ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
+p2 <- ggplot(AA_total, aes(x = TLc, y = value, fill = AA)) +
   themeKV + theme(legend.position = "none") +
   geom_point(alpha=0.05, color="black", position="jitter", shape = 16, size = 3) +  
   geom_boxplot(alpha=0.65, colour = "black", linewidth = 0.25, outlier.color = NA) +
 #  scale_y_continuous(breaks= pretty_breaks()) +
   scale_fill_brewer(palette = "Spectral")+
   ylab("d15N (%)") + # this needs to read δ15N (‰) but it wont print to PDF
-  facet_wrap(~AA, ncol=4, scales = "free_y")
+  facet_wrap(~AA, ncol=6, scales = "free_y")
 
 
 
@@ -398,13 +399,13 @@ mean(TEF_gather$value) # 7.42069
 #### across both trophic levels: TL=2, TL=3
 
 # read in the silhouettes for the plot
-sil1 <- readPNG("/Users/kylevanhoutan/palila_CSIA/images/larvae.png", native = TRUE)
-sil2 <- readPNG("/Users/kylevanhoutan/palila_CSIA/images/spider.png", native = TRUE)
+sil1 <- readPNG("/Users/kylevanhoutan/projects/palila_CSIA/images/larvae.png", native = TRUE)
+sil2 <- readPNG("/Users/kylevanhoutan/projects/palila_CSIA/images/spider.png", native = TRUE)
 img1 <- grid::rasterGrob(sil1, interpolate = TRUE)
 img2 <- grid::rasterGrob(sil2, interpolate = TRUE)
 
 #make the plot
-ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
+p3 <- ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) + 
   themeKV + 
   theme(legend.position = "none") + #ggdist is already grouping the TL categories
   stat_dots(quantiles = 100, side = "bottom", color = NA, alpha = 0.8, height = 0.6) + # quantiles (e.g., "quantiles = 100") controls size of dots
@@ -415,7 +416,19 @@ ggplot(TEF_gather, aes(x = value, y = TEF, fill = TEF)) +
   xlab("TEF (d15N %)") +
   ylab("trophic level") +
   stat_summary(geom = "text", fontface = "bold", size = 4.5, vjust = -1.5, hjust = -0.75,
-               fun = "ave", aes(label = round(after_stat(x), 2),
+               fun = "ave", aes(label = round(after_stat(x), 1),
                color = TEF , color = after_scale(darken(color, 0.5)))) +
   inset_element(p = img1, left = 0.075, bottom = 0.3, right = 0.21, top = 0.4) + # insert the silhouettes
   inset_element(p = img2, left = 0.05, bottom = 0.68, right = 0.25, top = 0.88)
+
+
+#### make composite plot
+layout <- "
+AAAA
+BBBC"
+p2 + p1 + p3 + 
+  plot_layout(design = layout) +
+  plot_annotation(tag_levels = 'a') # add panel labels a, b, c... etc
+
+
+#### FIN
