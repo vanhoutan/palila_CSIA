@@ -29,8 +29,6 @@ leading driver of the trophic decline.
 
 ## About this project
 
-*(adapted and expanded from the original repository notes)*
-
 The palila is an endemic Hawaiian land bird that resides only on the upper slopes of a
 single volcano (Mauna Kea) on the island of Hawaiʻi. It is critically endangered and
 actively declining in both abundance and geographic range. This project asks how
