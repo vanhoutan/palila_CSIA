@@ -2,8 +2,13 @@
 
 **A century of trophic change in the palila (*Loxioides bailleui*), reconstructed from museum-specimen amino-acid stable isotopes**
 
+<p align="center">
+  <img src="header.png" alt="Figure 3 — palila trophic position declined from ~2.6 (1891) to ~2.2 (2006)" width="300">
+</p>
+
 [![DOI](https://img.shields.io/badge/paper-10.1016%2Fj.biocon.2024.110823-b3361f.svg)](https://doi.org/10.1016/j.biocon.2024.110823)
 [![Data: OSF](https://img.shields.io/badge/data-OSF-1b8a8f.svg)](https://osf.io/2jvs9/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-d98a2b.svg)](LICENSE)
 [![Language: R](https://img.shields.io/badge/made%20with-R-276DC3.svg)](https://www.r-project.org/)
 
 Data, model, and code behind *Climatic drought and trophic disruption in an endemic
@@ -96,7 +101,9 @@ palila_CSIA/
 ├── MixSIAR_model.txt      # JAGS model written by MixSIAR (continuous-effect mixing model)
 ├── images/                # palila + prey photos; larvae.png / spider.png silhouettes
 ├── viz/                   # exported figure PDFs/PNGs (working drafts + finals)
+├── header.png             # Figure 3 (palila TP decline) — used as the README banner
 ├── palila_CSIA.Rproj      # RStudio project (sets working dir to repo root)
+├── LICENSE                # MIT
 └── README.md
 ```
 
@@ -273,10 +280,6 @@ install.packages(c(
 
 ### Reproducibility notes
 
-- **No license file.** The paper states the code and data are freely available, but the
-  repository currently has **no `LICENSE`**, which by default means all rights reserved.
-  Adding an explicit license (e.g. MIT, to match the other repos in this group) would
-  make the intended reuse rights unambiguous.
 - **GitHub link in the paper.** The published data-availability statement lists
   `bit.ly/3qW45Md` for the GitHub repository — but that short link resolves to a
   *different* repo (the Neotropical-parrots project). The canonical location for this
@@ -305,8 +308,9 @@ install.packages(c(
 
 ## License
 
-No license is currently specified for this repository (see the reproducibility notes).
-Until one is added, reuse rights are not formally granted; please contact the authors.
+Code in this repository is released under the **MIT License** — see [`LICENSE`](LICENSE).
+© 2026 Kyle Van Houtan. The data are additionally mirrored open-access on the Open
+Science Framework ([osf.io/2jvs9](https://osf.io/2jvs9/)).
 
 ---
 
